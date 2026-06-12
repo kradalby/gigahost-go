@@ -1,0 +1,71 @@
+name: acceptance
+
+# Acceptance tests require live Gigahost credentials and should only
+# run when explicitly requested. They are gated by a deployment
+# environment whose secrets contain the token.
+#
+# OpenTofu is the primary target; Terraform compatibility is verified
+# on demand via the matrix entry below.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runtime:
+        description: "Runtime to use"
+        type: choice
+        options:
+          - opentofu
+          - terraform
+          - both
+        default: opentofu
+  schedule:
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  acc:
+    name: TF_ACC=1 (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    environment: gigahost-acctest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime:
+          - opentofu
+        include:
+          - runtime: terraform
+            skip: ${{ github.event.inputs.runtime == 'opentofu' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v18
+
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+
+      - name: Acceptance tests
+        if: matrix.skip != 'true'
+        env:
+          TF_ACC: "1"
+          GIGAHOST_TOKEN: ${{ secrets.GIGAHOST_TOKEN }}
+        run: |
+          case "${{ matrix.runtime }}" in
+            opentofu)
+              nix develop --command -- bash -c \
+                'TF_ACC_TERRAFORM_PATH=$(command -v tofu) go test -v -timeout 30m ./tfprovider/...'
+              ;;
+            terraform)
+              # Terraform is unfree; install it directly from HashiCorp.
+              nix develop --command -- bash -c '
+                curl -fsSL https://releases.hashicorp.com/terraform/1.14.8/terraform_1.14.8_linux_amd64.zip -o /tmp/tf.zip
+                unzip -o /tmp/tf.zip -d /tmp
+                chmod +x /tmp/terraform
+                TF_ACC_TERRAFORM_PATH=/tmp/terraform go test -v -timeout 30m ./tfprovider/...
+              '
+              ;;
+          esac

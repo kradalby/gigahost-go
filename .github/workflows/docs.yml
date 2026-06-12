@@ -1,0 +1,34 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: docs drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v18
+
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+
+      - name: Regenerate provider docs
+        run: nix run .#tfdocs
+
+      - name: Fail on uncommitted doc changes
+        run: |
+          if ! git diff --exit-code -- terraform-provider-gigahost/docs; then
+            echo "::error::Provider docs are out of date. Run 'nix run .#tfdocs' and commit the result."
+            exit 1
+          fi
