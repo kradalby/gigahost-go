@@ -1,0 +1,14 @@
+{
+  "meta": { "status": 200, "status_message": "200 OK" },
+  "data": {
+    "exchange_rates": [
+      { "id": "1", "currency_code": "NOK", "prefix": "kr", "exchange_rate": "0.000000" }
+    ],
+    "invoices": [],
+    "orders": [],
+    "billing": { "payment_id": "4", "payment_type": "invoice" },
+    "card_details": [],
+    "credit": [{ "credit_currency": "NOK", "credit_amount": "500.00" }],
+    "hourly": []
+  }
+}

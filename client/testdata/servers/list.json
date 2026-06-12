@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": [
+    {
+      "srv_id": "3523",
+      "srv_tag": "0",
+      "product_id": "0",
+      "cust_id": "19998",
+      "node_id": "0",
+      "pmx_id": "4",
+      "os_id": "72",
+      "nic_id": "1422",
+      "iso_id": "0",
+      "bwpool_id": "0",
+      "srv_name": "srv3523.gigahost.no",
+      "srv_status": true,
+      "srv_status_rescue": false,
+      "srv_status_install": false,
+      "srv_status_snapshot": false,
+      "srv_status_mount": false,
+      "srv_status_method": "icmp",
+      "srv_status_reboot": "0",
+      "srv_label": "srv3523.gigahost.no",
+      "srv_date_created": "1530609706",
+      "srv_vps_type": "kvm",
+      "srv_hostname": "srv3523.gigahost.no",
+      "srv_bw": "1000",
+      "srv_feature_reinstall": true,
+      "srv_feature_mgmt": true,
+      "srv_feature_preconf": "0",
+      "srv_mgmt_type": "kvm",
+      "srv_cores": "2",
+      "srv_ram": "2",
+      "srv_ram_type": "",
+      "srv_ram_sticks": "0",
+      "srv_suspended": false,
+      "srv_custom_partition": "1",
+      "srv_new": false,
+      "srv_location": "DC2",
+      "srv_type": "vps",
+      "srv_primary_ip": "185.181.63.24",
+      "os": {
+        "os_id": "72",
+        "os_name": "Ubuntu 18.04 LTS 64-bit",
+        "os_release": "ubuntu",
+        "os_dedicated_only": "0",
+        "os_minram": "0",
+        "os_custom_partition": "1",
+        "os_single_disk_only": "1"
+      },
+      "ips": [
+        {
+          "ip_id": "7795",
+          "sub_id": "405",
+          "ip_v4v6": "ipv4",
+          "ip_address": "185.181.63.24",
+          "ip_reverse": "static.185.181.63.24.customers.gigahost.no",
+          "ip_traffic_sum": "0",
+          "ip_pkts_sum": "0",
+          "ip_nullroute": "0",
+          "ip_routed_to": "0",
+          "ip_type": "primary",
+          "ip_netmask": "255.255.255.0",
+          "ip_gateway": "185.181.63.1"
+        }
+      ]
+    }
+  ]
+}
