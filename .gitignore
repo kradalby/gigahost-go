@@ -1,0 +1,36 @@
+# Binaries
+/gigahost
+/terraform-provider-gigahost/terraform-provider-gigahost
+
+# Build artifacts
+/dist/
+/result
+/result-*
+
+# Test artifacts
+/coverage.out
+/coverage.html
+*.test
+*.prof
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*~
+
+# direnv
+/.direnv/
+
+# Go
+/vendor/
+/go.work.sum
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfvars
+!**/*example.tfvars

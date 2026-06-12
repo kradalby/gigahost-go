@@ -1,0 +1,115 @@
+---
+# golangci-lint configuration for gigahost-go.
+#
+# Strategy: `default: all` and then disable known-to-be-noisy or
+# stylistic-only linters that add friction without improving quality.
+# Based on juanfont/headscale with adjustments for this project.
+version: "2"
+
+linters:
+  default: all
+  disable:
+    - cyclop
+    - depguard
+    - dupl
+    - err113 # dynamic errors are idiomatic for user-facing messages
+    - exhaustive # Go type switches don't need every reflect.Kind case
+    - exhaustruct
+    - funcorder
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst # schema attribute names/descriptions repeat by nature; noise
+    - godox
+    - inamedparam # our interface declarations intentionally use bare types
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - musttag
+    - nestif
+    - noinlineerr # `if err := ...; err != nil` is idiomatic Go
+    - paralleltest
+    - prealloc # noisy on diag.Diagnostics / error-slice accumulation
+    - revive
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wrapcheck
+    - wsl # superseded by wsl_v5
+
+  settings:
+    forbidigo:
+      forbid:
+        # Sleep-based tests are brittle and hide real bugs.
+        - pattern: 'time\.Sleep'
+          msg: >-
+            time.Sleep is forbidden. In tests: poll with require.Eventually.
+            In production: use context-based waits or exponential backoff.
+        # Never use http.DefaultClient; always accept one via WithHTTPClient.
+        - pattern: 'http\.DefaultClient'
+          msg: >-
+            http.DefaultClient is forbidden. Accept an *http.Client via
+            gigahost.WithHTTPClient or construct one explicitly with timeouts.
+        # We migrated to encoding/json/v2 via go-json-experiment; v1 "encoding/json"
+        # must not be imported directly. Use github.com/go-json-experiment/json.
+        - pattern: '"encoding/json"'
+          msg: >-
+            encoding/json is forbidden in this module. Use
+            github.com/go-json-experiment/json (JSON v2 reference impl).
+      analyze-types: true
+    gocritic:
+      disabled-checks:
+        - appendAssign
+        - ifElseChain
+    gosec:
+      excludes:
+        # G101: Potential hardcoded credentials -- false positives on test
+        # tokens and example strings in our test files.
+        - G101
+        # G704: SSRF via taint analysis -- the HTTP client always targets the
+        # fixed Gigahost API host (only the path varies), so this is a false
+        # positive for a deliberate API client.
+        - G704
+
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - testdata$
+      - examples$
+      - docs$
+    rules:
+      # Relax strict checks inside test files.
+      - path: _test\.go
+        linters:
+          - bodyclose
+          - errcheck
+          - forbidigo
+          - gocritic
+          - gosec
+          - noctx
+          - unparam
+      # The shim re-exports; it's almost entirely boilerplate.
+      - path: terraform-provider-gigahost/
+        linters:
+          - forbidigo
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - testdata$
+      - examples$
+      - docs$

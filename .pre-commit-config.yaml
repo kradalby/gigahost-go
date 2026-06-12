@@ -1,0 +1,75 @@
+# prek / pre-commit configuration.
+# See https://prek.j178.dev/ and https://pre-commit.com/
+#
+# Hooks expect their tools to be resolvable from PATH. The nix dev
+# shell (flake.nix#devShells.default) provides exactly the right
+# versions; developers should enter it with `nix develop` (or use
+# direnv). CI workflows wrap `prek run --all-files` with
+# `nix develop --command` for the same effect.
+
+exclude: (testdata/|^docs/|^terraform-provider-gigahost/docs/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: nixpkgs-fmt
+        name: nixpkgs-fmt
+        entry: nixpkgs-fmt
+        language: system
+        files: \.nix$
+
+      - id: prettier
+        name: prettier
+        entry: prettier --write --list-different
+        language: system
+        types_or: [yaml, json, markdown]
+
+      - id: gofumpt
+        name: gofumpt
+        entry: gofumpt -w
+        language: system
+        types: [go]
+
+      - id: golangci-lint
+        name: golangci-lint (root module)
+        entry: golangci-lint run --timeout=5m --fix
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: golangci-lint-tfprovider
+        name: golangci-lint (terraform-provider-gigahost module)
+        entry: bash -c 'cd terraform-provider-gigahost && golangci-lint run --timeout=5m --fix'
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: go-test
+        name: go test (root module)
+        entry: go test -race -short ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: go-test-tfprovider
+        name: go test (terraform-provider-gigahost module)
+        entry: bash -c 'cd terraform-provider-gigahost && go test -race -short ./...'
+        language: system
+        types: [go]
+        pass_filenames: false
