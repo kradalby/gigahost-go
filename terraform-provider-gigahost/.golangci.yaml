@@ -1,0 +1,50 @@
+---
+# Lint config for the terraform-provider-gigahost shim module.
+#
+# Inherits the spirit of the root .golangci.yaml but allows the one
+# feature we need specifically here: a local replace directive.
+# The root module lives one directory up; when this subdirectory is
+# copied out to its own public repository the replace directive is
+# removed and Go's module resolution takes over.
+
+version: "2"
+
+linters:
+  default: all
+  disable:
+    - cyclop
+    - depguard
+    - dupl
+    - err113
+    - exhaustive
+    - exhaustruct
+    - funcorder
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - godox
+    - gomoddirectives
+    - inamedparam
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - musttag
+    - nestif
+    - noinlineerr
+    - paralleltest
+    - revive
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wrapcheck
+    - wsl # superseded by wsl_v5
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
