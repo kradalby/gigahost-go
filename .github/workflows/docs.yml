@@ -9,23 +9,29 @@ on:
 permissions:
   contents: read
 
+# Every `run:` step executes inside `nix develop`, so tools come straight from
+# the flake devShell with no per-step prefix.
+defaults:
+  run:
+    shell: nix develop --command bash -e {0}
+
 jobs:
   drift:
     name: docs drift
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v18
+        uses: NixOS/nix-installer-action@main
 
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v13
+      - name: Setup Nix cache (hestia)
+        uses: Mic92/hestia/action@main
 
       - name: Check examples are formatted
         run: |
-          if ! nix develop --command tofu fmt -check -recursive terraform-provider-gigahost/examples; then
+          if ! tofu fmt -check -recursive terraform-provider-gigahost/examples; then
             echo "::error::Examples are not formatted. Run 'nix run .#fmt' and commit the result."
             exit 1
           fi
