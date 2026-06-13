@@ -21,7 +21,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v18
 
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v13
+        uses: DeterminateSystems/magic-nix-cache-action@v14
 
       - name: Check examples are formatted
         run: |

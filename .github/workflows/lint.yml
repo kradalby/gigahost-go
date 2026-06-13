@@ -21,7 +21,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v18
 
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v13
+        uses: DeterminateSystems/magic-nix-cache-action@v14
 
       - name: Lint root module
         run: nix develop --command -- golangci-lint run --timeout=10m
@@ -43,7 +43,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v18
 
       - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v13
+        uses: DeterminateSystems/magic-nix-cache-action@v14
 
       - name: Run pre-commit hooks
         run: nix develop --command -- prek run --all-files
