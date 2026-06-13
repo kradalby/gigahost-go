@@ -258,6 +258,7 @@
 
             fmt = mkApp "fmt" ''
               gofumpt -w .
+              tofu fmt -recursive terraform-provider-gigahost/examples
               golangci-lint run --fix --timeout=10m ./... || true
               (cd terraform-provider-gigahost && golangci-lint run --fix --timeout=10m ./... || true)
             '';

@@ -23,6 +23,13 @@ jobs:
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v13
 
+      - name: Check examples are formatted
+        run: |
+          if ! nix develop --command tofu fmt -check -recursive terraform-provider-gigahost/examples; then
+            echo "::error::Examples are not formatted. Run 'nix run .#fmt' and commit the result."
+            exit 1
+          fi
+
       - name: Regenerate provider docs
         run: nix run .#tfdocs
 

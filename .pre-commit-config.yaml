@@ -46,6 +46,13 @@ repos:
         language: system
         types: [go]
 
+      - id: tofu-fmt
+        name: tofu fmt (examples)
+        entry: tofu fmt -recursive terraform-provider-gigahost/examples
+        language: system
+        types: [terraform]
+        pass_filenames: false
+
       - id: golangci-lint
         name: golangci-lint (root module)
         entry: golangci-lint run --timeout=5m --fix
