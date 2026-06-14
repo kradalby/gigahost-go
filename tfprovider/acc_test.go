@@ -101,7 +101,7 @@ func testAccGigahostClient(t *testing.T) *gigahost.Client {
 
 	token := os.Getenv("GIGAHOST_TOKEN")
 	if token == "" {
-		t.Fatal("GIGAHOST_TOKEN not set")
+		t.Skip("GIGAHOST_TOKEN not set; skipping acceptance test")
 	}
 
 	c, err := gigahost.NewClient(gigahost.WithToken(token))
