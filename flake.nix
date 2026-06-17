@@ -27,8 +27,8 @@
           # Module vendor hashes (no in-tree vendor dir). Recompute after go.mod
           # / go.sum changes. The provider is a nested module that replaces the
           # parent (=> ../), so it is built from the repo root via modRoot.
-          rootVendorHash = "sha256-VTczZxefrgQBNFYiODY08xQRrD24ZJFyuEsRuIdB0vE=";
-          providerVendorHash = "sha256-JdfFnGNWHs1Xanle56Gc3/Rgj0TDeNONCHz28Y898mk=";
+          rootVendorHash = "sha256-XaDAZis1MjP0CO48Wk3gYNUifgaBw/MeZai4TRUImm0=";
+          providerVendorHash = "sha256-REoPCatwUc1EPcGRCDGz9SouK1oLup54ONTY7ZEIqh8=";
         in
         {
           gigahost = buildGo {
@@ -156,7 +156,7 @@
           inherit pkgs version;
           root = ./.;
           pname = "gigahost";
-          vendorHash = "sha256-VTczZxefrgQBNFYiODY08xQRrD24ZJFyuEsRuIdB0vE=";
+          vendorHash = "sha256-XaDAZis1MjP0CO48Wk3gYNUifgaBw/MeZai4TRUImm0=";
           goPkg = pkgs.go_1_26;
           # client/*_test.go decode fixtures from client/testdata.
           extraSrc = [ ./client/testdata ];
