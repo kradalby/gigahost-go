@@ -6,6 +6,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     flake-checks.url = "github:kradalby/flake-checks";
     flake-checks.inputs.nixpkgs.follows = "nixpkgs";
+    flake-checks.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =
@@ -18,16 +19,20 @@
     let
       version = self.shortRev or self.dirtyShortRev or "dev";
       commitHash = self.rev or self.dirtyRev or "dirty";
+      # Root module vendor hash. Shared between the overlay package and the
+      # flake-checks `common` so it lives in one place. Recompute after
+      # go.mod / go.sum changes (`nix-vendor-sri` in the devShell).
+      rootVendorHash = "sha256-XaDAZis1MjP0CO48Wk3gYNUifgaBw/MeZai4TRUImm0=";
     in
     {
       overlays.default = _: prev:
         let
           pkgs = nixpkgs.legacyPackages.${prev.stdenv.hostPlatform.system};
           buildGo = pkgs.buildGo126Module;
-          # Module vendor hashes (no in-tree vendor dir). Recompute after go.mod
+          # Provider vendor hash (no in-tree vendor dir). Recompute after go.mod
           # / go.sum changes. The provider is a nested module that replaces the
-          # parent (=> ../), so it is built from the repo root via modRoot.
-          rootVendorHash = "sha256-XaDAZis1MjP0CO48Wk3gYNUifgaBw/MeZai4TRUImm0=";
+          # parent (=> ../), so it is built from the repo root via modRoot. The
+          # root module hash is hoisted to the top-level `rootVendorHash`.
           providerVendorHash = "sha256-REoPCatwUc1EPcGRCDGz9SouK1oLup54ONTY7ZEIqh8=";
         in
         {
@@ -156,7 +161,7 @@
           inherit pkgs version;
           root = ./.;
           pname = "gigahost";
-          vendorHash = "sha256-XaDAZis1MjP0CO48Wk3gYNUifgaBw/MeZai4TRUImm0=";
+          vendorHash = rootVendorHash;
           goPkg = pkgs.go_1_26;
           # client/*_test.go decode fixtures from client/testdata.
           extraSrc = [ ./client/testdata ];
@@ -164,7 +169,7 @@
           excludeSrc = [ ./terraform-provider-gigahost ];
         };
 
-        buildDeps = with pkgs; [ git go_1_26 gnumake ];
+        buildDeps = with pkgs; [ git go_1_26 ];
 
         devDeps = with pkgs;
           buildDeps
