@@ -52,7 +52,7 @@ jobs:
         uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc # main
 
       - name: Setup Nix cache (hestia)
-        uses: Mic92/hestia/action@ff07bb902a9968ac0c3d0e51d90a606662a375d8 # main
+        uses: Mic92/hestia/action@5c4988496e5d4fc8c04a81029c438339d3d73243 # main
 
       - name: Acceptance tests
         if: matrix.skip != 'true'
