@@ -1,0 +1,35 @@
+{
+  "meta": { "status": 200, "status_message": "200 OK" },
+  "data": [
+    {
+      "os_id": "88",
+      "dist_id": "2",
+      "os_name": "Debian 11 64-bit",
+      "os_release": "debian",
+      "os_dist": "bullseye",
+      "os_arch": "amd64",
+      "os_custom_partition": "1",
+      "os_single_disk_only": "1",
+      "os_support_raid": "1",
+      "os_dedicated_only": "0",
+      "os_minram": "0",
+      "os_template": "",
+      "os_slow_install": "0"
+    },
+    {
+      "os_id": "101",
+      "dist_id": "2",
+      "os_name": "Debian 12 64-bit",
+      "os_release": "debian",
+      "os_dist": "bookworm",
+      "os_arch": "amd64",
+      "os_custom_partition": "1",
+      "os_single_disk_only": "1",
+      "os_support_raid": "1",
+      "os_dedicated_only": "0",
+      "os_minram": "0",
+      "os_template": "",
+      "os_slow_install": "0"
+    }
+  ]
+}

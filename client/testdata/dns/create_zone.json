@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "status": 201,
+    "status_message": "201 Created",
+    "message": "Zone created successfully."
+  },
+  "data": []
+}

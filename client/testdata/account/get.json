@@ -1,0 +1,65 @@
+{
+  "meta": { "status": 200, "status_message": "200 OK" },
+  "data": {
+    "cust_id": "1111",
+    "cust_name": "Kristoffer",
+    "cust_company_no": "999999999",
+    "cust_address": "Exampleveien 1",
+    "cust_address2": "",
+    "cust_province": "Oslo",
+    "cust_zipcode": "0123",
+    "cust_city": "Oslo",
+    "cust_country": "NO",
+    "cust_phone": "+47 12345678",
+    "cust_email": "a@b.no",
+    "cust_billing_email": "billing@b.no",
+    "cust_newsletter": false,
+    "cust_incident": true,
+    "cust_bandwidth_notification": true,
+    "cust_email_on_login": false,
+    "cust_notify_service_renewal": true,
+    "cust_partner": "0",
+    "sshkeys": [
+      {
+        "key_id": "5",
+        "key_name": "laptop",
+        "key_added": 1700000000,
+        "key_data": "ssh-ed25519 AAAA... user@host"
+      }
+    ],
+    "passkeys": [
+      {
+        "passkey_id": "2",
+        "passkey_name": "YubiKey",
+        "created_at": 1700000000,
+        "last_used": 1712000000
+      }
+    ],
+    "contacts": [
+      {
+        "contact_id": "1",
+        "contact_name": "Admin",
+        "contact_username": "admin@b.no",
+        "contact_access_level": "admin",
+        "contact_2fa": "1"
+      }
+    ],
+    "orders": [
+      {
+        "order_id": "10",
+        "order_number": "GH-100010",
+        "order_status": "active",
+        "order_billing_cycle": "monthly",
+        "products": [
+          {
+            "op_id": "1",
+            "srv_id": "3523",
+            "product_id": "42",
+            "product_name": "VPS-Linux-1",
+            "srv_name": "web01"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,266 @@
+{
+  "meta": { "status": 200, "status_message": "200 OK" },
+  "data": {
+    "tiers": [
+      {
+        "group_id": 60,
+        "group_name": "KVM Performance",
+        "products": [
+          {
+            "product_id": 7951,
+            "product_hash": "f9544dd3cb",
+            "product_name": "KVM Performance VPS 4GB",
+            "type": "vm",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "2",
+            "vm_memory": "4",
+            "vm_storage": "40",
+            "vm_bw": "20000",
+            "vm_bw_type": "quota",
+            "specs": {
+              "cpu_cores": 2,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 4,
+              "disks": [{ "size_gb": 40, "type": "NVMe" }],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null
+            },
+            "price_id": 4042,
+            "rate_hourly": 0.15813,
+            "rate_monthly": 99,
+            "region_ids": [1]
+          },
+          {
+            "product_id": 7952,
+            "product_hash": "a1b2c3d4e5",
+            "product_name": "KVM Performance VPS 8GB",
+            "type": "vm",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "4",
+            "vm_memory": "8",
+            "vm_storage": "80",
+            "vm_bw": "20000",
+            "vm_bw_type": "quota",
+            "specs": {
+              "cpu_cores": 4,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 8,
+              "disks": [{ "size_gb": 80, "type": "NVMe" }],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null
+            },
+            "price_id": 4045,
+            "rate_hourly": 0.25396,
+            "rate_monthly": 159,
+            "region_ids": [1]
+          }
+        ]
+      },
+      {
+        "group_id": 61,
+        "group_name": "KVM Value",
+        "products": [
+          {
+            "product_id": 7955,
+            "product_hash": "0badc0ffee",
+            "product_name": "KVM Value VPS 4GB",
+            "type": "vm",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "2",
+            "vm_memory": "4",
+            "vm_storage": "40",
+            "vm_bw": "20000",
+            "vm_bw_type": "quota",
+            "specs": {
+              "cpu_cores": 2,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 4,
+              "disks": [{ "size_gb": 40, "type": "NVMe" }],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null
+            },
+            "price_id": 4054,
+            "rate_hourly": 0.07826,
+            "rate_monthly": 49,
+            "region_ids": [1]
+          },
+          {
+            "product_id": 7956,
+            "product_hash": "deadbeef00",
+            "product_name": "KVM Value VPS 8GB",
+            "type": "vm",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "4",
+            "vm_memory": "8",
+            "vm_storage": "80",
+            "vm_bw": "20000",
+            "vm_bw_type": "quota",
+            "specs": {
+              "cpu_cores": 4,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 8,
+              "disks": [{ "size_gb": 80, "type": "NVMe" }],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null
+            },
+            "price_id": 4057,
+            "rate_hourly": 0.12618,
+            "rate_monthly": 79,
+            "region_ids": [1]
+          }
+        ]
+      },
+      {
+        "group_id": 55,
+        "group_name": "Intro Bare Metal",
+        "products": [
+          {
+            "product_id": 4873,
+            "product_hash": "1ntr0c0re5",
+            "product_name": "Intro - Intel Core i3 4GB",
+            "type": "dedicated",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "0",
+            "vm_memory": "0",
+            "vm_storage": "0",
+            "vm_bw": "0",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i5-2400 3.1GHz",
+              "ram_gb": 8,
+              "disks": [{ "size_gb": 500, "type": "HDD" }],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "uplink_gbps": 1
+            },
+            "price_id": 3397,
+            "rate_hourly": 0.31785,
+            "rate_monthly": 199,
+            "region_ids": [1]
+          },
+          {
+            "product_id": 4876,
+            "product_hash": "1ntr0c0re6",
+            "product_name": "Intro - Intel Core i5 16GB",
+            "type": "dedicated",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "0",
+            "vm_memory": "0",
+            "vm_storage": "0",
+            "vm_bw": "0",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i5-2400 3.1GHz",
+              "ram_gb": 16,
+              "disks": [{ "size_gb": 500, "type": "SSD" }],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "uplink_gbps": 1
+            },
+            "price_id": 3406,
+            "rate_hourly": 0.55743,
+            "rate_monthly": 349,
+            "region_ids": [1]
+          },
+          {
+            "product_id": 4877,
+            "product_hash": "1ntr0c0re7",
+            "product_name": "Intro - Intel Core i7 16GB",
+            "type": "dedicated",
+            "addons": [],
+            "auction_id": 0,
+            "vm_cores": "0",
+            "vm_memory": "0",
+            "vm_storage": "0",
+            "vm_bw": "0",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i7-3770 3.4GHz",
+              "ram_gb": 16,
+              "disks": [{ "size_gb": 500, "type": "SSD" }],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "uplink_gbps": 1
+            },
+            "price_id": 3412,
+            "rate_hourly": 0.63729,
+            "rate_monthly": 399,
+            "region_ids": [1]
+          }
+        ]
+      },
+      {
+        "group_id": 56,
+        "group_name": "Auction Bare Metal",
+        "products": [
+          {
+            "product_id": 1620,
+            "product_hash": "auct10n111",
+            "product_name": "Core i5 8GB 500GB 2018",
+            "type": "auction",
+            "addons": [],
+            "auction_id": 311,
+            "vm_cores": "0",
+            "vm_memory": "0",
+            "vm_storage": "0",
+            "vm_bw": "0",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i5-2400 3.1GHz",
+              "ram_gb": 8,
+              "disks": [{ "size_gb": 500, "type": "HDD" }],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "uplink_gbps": 1
+            },
+            "price_id": 0,
+            "rate_hourly": 0.34819,
+            "rate_monthly": 218,
+            "region_ids": [1]
+          }
+        ]
+      }
+    ],
+    "regions": [
+      {
+        "region_id": "1",
+        "region_name": "Sandefjord",
+        "region_name_short": "SFJ, NO",
+        "region_country": "Norge",
+        "region_icon": "ZmxhZ3N2Zw==",
+        "region_active": "1"
+      }
+    ],
+    "currency": "NOK",
+    "eligibility": {
+      "verified": 0,
+      "has_method": false,
+      "method_qualifies": false,
+      "has_paid_invoice": false,
+      "qualifies_arrears": false,
+      "credit_nok": 500
+    }
+  }
+}

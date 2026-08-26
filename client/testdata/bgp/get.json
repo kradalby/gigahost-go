@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": {
+    "asn": [
+      {
+        "id": "1",
+        "asn": "212345",
+        "asn_name": "Example Network",
+        "asn_country": "NO",
+        "irr_v4": "AS-EXAMPLE",
+        "irr_v6": "AS-EXAMPLE",
+        "irr_updated": "1700000000",
+        "status": "active",
+        "rejected_reason": ""
+      }
+    ],
+    "prefix_lists": [
+      {
+        "id": "1",
+        "asn_id": "1",
+        "prefix": "192.0.2.0/24",
+        "prefix_type": "ipv4",
+        "status": "active",
+        "your_asn": "212345",
+        "asn_country": "NO"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "1",
+        "asn_id": "1",
+        "cust_id": "1111",
+        "router_id": "1",
+        "srv_id": "3523",
+        "ip_id": "7795",
+        "ip_type": "ipv4",
+        "defaultroute": "1",
+        "status": "active",
+        "neighbor_ipv4": "185.125.168.1",
+        "neighbor_ipv6": "2a03:94e0::1",
+        "multihop": "0",
+        "router_asn": "39029",
+        "your_asn": "212345",
+        "asn_country": "NO",
+        "ip_address": "185.181.63.24"
+      }
+    ]
+  }
+}

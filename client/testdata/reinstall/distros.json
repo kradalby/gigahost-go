@@ -1,0 +1,23 @@
+{
+  "meta": { "status": 200, "status_message": "200 OK" },
+  "data": [
+    {
+      "dist_id": "2",
+      "type_id": "1",
+      "dist_name": "Debian",
+      "dist_value": "debian",
+      "dist_logo": "/images/os/debian.png",
+      "dist_description": "Debian er en programvaredistribusjon.",
+      "dist_active": "1"
+    },
+    {
+      "dist_id": "3",
+      "type_id": "1",
+      "dist_name": "Ubuntu",
+      "dist_value": "ubuntu",
+      "dist_logo": "/images/os/ubuntu.png",
+      "dist_description": "Ubuntu er et operativsystem.",
+      "dist_active": "1"
+    }
+  ]
+}
