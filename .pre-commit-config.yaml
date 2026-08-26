@@ -1,0 +1,97 @@
+# prek / pre-commit configuration.
+# See https://prek.j178.dev/ and https://pre-commit.com/
+#
+# Hooks expect their tools to be resolvable from PATH. The nix dev
+# shell (flake.nix#devShells.default) provides exactly the right
+# versions; developers should enter it with `nix develop` (or use
+# direnv). CI workflows wrap `prek run --all-files` with
+# `nix develop --command` for the same effect.
+
+exclude: (testdata/|^docs/|^terraform-provider-gigahost/docs/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: nixpkgs-fmt
+        name: nixpkgs-fmt
+        entry: nixpkgs-fmt
+        language: system
+        files: \.nix$
+
+      - id: prettier
+        name: prettier
+        entry: prettier --write --list-different
+        language: system
+        types_or: [yaml, json, markdown]
+
+      - id: gofumpt
+        name: gofumpt
+        entry: gofumpt -w
+        language: system
+        types: [go]
+
+      - id: tofu-fmt
+        name: tofu fmt (examples)
+        entry: tofu fmt -recursive terraform-provider-gigahost/examples
+        language: system
+        types: [terraform]
+        pass_filenames: false
+
+      - id: golangci-lint
+        name: golangci-lint (root module)
+        entry: golangci-lint run --timeout=5m --fix
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: golangci-lint-tfprovider
+        name: golangci-lint (terraform-provider-gigahost module)
+        entry: bash -c 'cd terraform-provider-gigahost && golangci-lint run --timeout=5m --fix'
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: go-test
+        name: go test (root module)
+        entry: go test -timeout=5m ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: go-test-tfprovider
+        name: go test (terraform-provider-gigahost module)
+        entry: bash -c 'cd terraform-provider-gigahost && go test -timeout=5m ./...'
+        language: system
+        types: [go]
+        pass_filenames: false
+
+      - id: nix-build-checks
+        name: nix build (gated flake checks)
+        entry: bash -c 'nix build --fallback .#checks.x86_64-linux.build .#checks.x86_64-linux.golangci-lint .#checks.x86_64-linux.formatting .#checks.x86_64-linux.build-provider'
+        language: system
+        # build-provider is included, and the pattern covers Go sources, because
+        # providerVendorHash is a hash of the *parent* module's own source: the
+        # nested provider module replaces `../`, so `go mod vendor` copies
+        # client/ and tfprovider/ into the fixed-output derivation. The hash
+        # therefore moves on every Go edit, not just on go.mod changes. A
+        # pattern matching only flake/go.mod let a whole branch of commits land
+        # with a stale hash.
+        files: ^(flake\.(nix|lock)|go\.(mod|sum)|(client|tfprovider|cli|testhelper)/.*\.go)$
+        pass_filenames: false
