@@ -1,0 +1,57 @@
+name: release
+
+# The CLI is tagged cli/vX.Y.Z, not vX.Y.Z. A bare version tag on this
+# repository would be a Go module version, and `go get <module>@<sha>`
+# resolves a tagged commit back to its tag — which would make the provider's
+# go.mod record a version instead of the pseudo-version its release flow
+# depends on. A cli/ prefix is not a valid version for this module path, so
+# both can coexist.
+on:
+  push:
+    tags:
+      - "cli/v[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: write
+
+# Never cancel a release, and never run two: goreleaser races on the same
+# GitHub release and asset uploads, and a half-uploaded release is what the
+# registries would ingest.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+# Every `run:` step executes inside `nix develop`, so tools come straight from
+# the flake devShell with no per-step prefix.
+defaults:
+  run:
+    shell: nix develop --command bash -e {0}
+
+jobs:
+  goreleaser:
+    name: goreleaser (CLI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Tag must be on main
+        # A tag pushed from a feature branch would publish unreviewed code,
+        # and neither registry accepts a re-upload of a version.
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main \
+            || { echo "::error::tag ${GITHUB_REF_NAME} is not on main"; exit 1; }
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc # main
+
+      - name: Setup Nix cache (hestia)
+        uses: Mic92/hestia/action@ff07bb902a9968ac0c3d0e51d90a606662a375d8 # main
+
+      - name: goreleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goreleaser release --clean

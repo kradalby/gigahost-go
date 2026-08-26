@@ -1,0 +1,103 @@
+name: acceptance
+
+# Acceptance tests require live Gigahost credentials and should only
+# run when explicitly requested. They are gated by a deployment
+# environment whose secrets contain the token.
+#
+# OpenTofu is the primary target; Terraform compatibility is verified
+# on demand via the matrix entry below.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runtime:
+        description: "Runtime to use"
+        type: choice
+        options:
+          - opentofu
+          - terraform
+          - both
+        default: opentofu
+  schedule:
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+# Two runs against one live account would collide: same name prefixes, same
+# zone apex, concurrent deploys. Queue rather than cancel, so a run that is
+# mid-apply gets to finish and clean up after itself.
+concurrency:
+  group: acceptance
+  cancel-in-progress: false
+
+# Every `run:` step executes inside `nix develop`, so tools come straight from
+# the flake devShell with no per-step prefix.
+defaults:
+  run:
+    shell: nix develop --command bash -e {0}
+
+jobs:
+  acc:
+    name: TF_ACC=1 (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    environment: gigahost-acctest
+    strategy:
+      fail-fast: false
+      # One at a time: both legs drive the same live account, so running them
+      # together doubles the spend and races on resource names.
+      max-parallel: 1
+      matrix:
+        runtime:
+          - opentofu
+          - terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc # main
+
+      - name: Setup Nix cache (hestia)
+        uses: Mic92/hestia/action@ff07bb902a9968ac0c3d0e51d90a606662a375d8 # main
+
+      - name: Acceptance tests
+        # A schedule carries no inputs, so cron runs the OpenTofu leg only.
+        # The previous guard compared a YAML boolean against the string
+        # 'true' and so never fired, which meant every cron ran both legs in
+        # parallel against the same account.
+        if: >-
+          (matrix.runtime == 'opentofu' && (github.event_name == 'schedule' || inputs.runtime != 'terraform'))
+          || (matrix.runtime == 'terraform' && (inputs.runtime == 'terraform' || inputs.runtime == 'both'))
+        env:
+          TF_ACC: "1"
+          GIGAHOST_TOKEN: ${{ secrets.GIGAHOST_TOKEN }}
+          TF_VERSION: "1.14.8"
+          TF_SHA256: "56a5d12f47cbc1c6bedb8f5426ae7d5df984d1929572c24b56f4c82e9f9bf709"
+        run: |
+          case "${{ matrix.runtime }}" in
+            opentofu)
+              TF_ACC_TERRAFORM_PATH=$(command -v tofu) go test -v -timeout 30m ./tfprovider/...
+              ;;
+            terraform)
+              # Terraform is unfree, so it comes from HashiCorp rather than
+              # nixpkgs. This step holds a live billing-capable token, so the
+              # download is checksum-verified: an unverified binary here could
+              # exfiltrate it.
+              curl -fsSL "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip" -o /tmp/tf.zip
+              echo "${TF_SHA256}  /tmp/tf.zip" | sha256sum -c -
+              unzip -o /tmp/tf.zip -d /tmp
+              chmod +x /tmp/terraform
+              TF_ACC_TERRAFORM_PATH=/tmp/terraform go test -v -timeout 30m ./tfprovider/...
+              ;;
+          esac
+
+      - name: Sweep anything the run left behind
+        # A timeout, a cancellation or a dead runner skips every t.Cleanup and
+        # the framework's own destroy, so servers keep billing with no alert.
+        if: always()
+        env:
+          GIGAHOST_TOKEN: ${{ secrets.GIGAHOST_TOKEN }}
+          GIGAHOST_TEST_ZONE_APEX: ${{ vars.GIGAHOST_TEST_ZONE_APEX }}
+        run: go test ./tfprovider/ -sweep=all -timeout 20m

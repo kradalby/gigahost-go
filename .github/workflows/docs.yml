@@ -1,0 +1,47 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Every `run:` step executes inside `nix develop`, so tools come straight from
+# the flake devShell with no per-step prefix.
+defaults:
+  run:
+    shell: nix develop --command bash -e {0}
+
+jobs:
+  drift:
+    name: docs drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@6b8548fe06acfb0155a50ab5d561accb215764cc # main
+
+      - name: Setup Nix cache (hestia)
+        uses: Mic92/hestia/action@ff07bb902a9968ac0c3d0e51d90a606662a375d8 # main
+
+      - name: Check examples are formatted
+        run: |
+          if ! tofu fmt -check -recursive terraform-provider-gigahost/examples; then
+            echo "::error::Examples are not formatted. Run 'nix run .#fmt' and commit the result."
+            exit 1
+          fi
+
+      - name: Regenerate provider docs
+        run: nix run .#tfdocs
+
+      - name: Fail on uncommitted doc changes
+        run: |
+          if ! git diff --exit-code -- terraform-provider-gigahost/docs; then
+            echo "::error::Provider docs are out of date. Run 'nix run .#tfdocs' and commit the result."
+            exit 1
+          fi
