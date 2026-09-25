@@ -73,8 +73,8 @@ jobs:
         env:
           TF_ACC: "1"
           GIGAHOST_TOKEN: ${{ secrets.GIGAHOST_TOKEN }}
-          TF_VERSION: "1.14.8"
-          TF_SHA256: "56a5d12f47cbc1c6bedb8f5426ae7d5df984d1929572c24b56f4c82e9f9bf709"
+          TF_VERSION: "1.16.4"
+          TF_SHA256: "dc94af0eef1147718ad7c8daea792ed199e3e0492eec180d0adafa2a65a879df"
         run: |
           case "${{ matrix.runtime }}" in
             opentofu)
