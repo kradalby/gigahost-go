@@ -108,13 +108,7 @@
           gotestsum = prev.gotestsum.override { buildGoModule = buildGo; };
           gotests = prev.gotests.override { buildGoModule = buildGo; };
           gofumpt = prev.gofumpt.override { buildGoModule = buildGo; };
-          # goimports ships wrapped with a `go` on PATH. That `go` must be at
-          # least the go.mod directive, or GOTOOLCHAIN=auto tries to fetch a
-          # toolchain from inside the network-less treefmt sandbox.
-          gotools = prev.gotools.override {
-            buildGoModule = buildGo;
-            go = pkgs.go_latest;
-          };
+          gotools = prev.gotools.override { buildGoModule = buildGo; };
         };
     }
     # Not eachDefaultSystem: it still lists x86_64-darwin, which nixpkgs
