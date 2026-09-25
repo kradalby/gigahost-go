@@ -245,8 +245,9 @@
         apps =
           let
             binPath = pkgs.lib.makeBinPath devDeps;
+            # `nix flake check` warns about apps without a meta.description.
             mkApp =
-              name: text:
+              name: description: text:
               flake-utils.lib.mkApp {
                 drv = pkgs.writeShellScriptBin name ''
                   set -euo pipefail
@@ -255,21 +256,24 @@
                   export GOTOOLCHAIN=local
                   ${text}
                 '';
+              }
+              // {
+                meta = { inherit description; };
               };
+            pkgApp =
+              drv: flake-utils.lib.mkApp { inherit drv; } // { meta = { inherit (drv.meta) description; }; };
           in
           {
-            gigahost = flake-utils.lib.mkApp { drv = pkgs.gigahost; };
-            terraform-provider-gigahost = flake-utils.lib.mkApp {
-              drv = pkgs.terraform-provider-gigahost;
-            };
-            default = flake-utils.lib.mkApp { drv = pkgs.gigahost; };
+            gigahost = pkgApp pkgs.gigahost;
+            terraform-provider-gigahost = pkgApp pkgs.terraform-provider-gigahost;
+            default = pkgApp pkgs.gigahost;
 
-            test = mkApp "test" ''
+            test = mkApp "test" "Run the unit tests of both modules with -race" ''
               go test -race ./...
               (cd terraform-provider-gigahost && go test -race ./...)
             '';
 
-            test-acc = mkApp "test-acc" ''
+            test-acc = mkApp "test-acc" "Run the provider acceptance tests against the live API" ''
               export TF_ACC=1
               export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
               export TF_ACC_PROVIDER_NAMESPACE=hashicorp
@@ -277,23 +281,23 @@
               go test -v -timeout 30m ./tfprovider/...
             '';
 
-            test-e2e = mkApp "test-e2e" ''
+            test-e2e = mkApp "test-e2e" "Run the live end-to-end suites" ''
               go test -tags e2e -v -timeout 30m ./e2e/... ./cli/...
             '';
 
-            lint = mkApp "lint" ''
+            lint = mkApp "lint" "Run golangci-lint on both modules" ''
               golangci-lint run --timeout=10m ./...
               (cd terraform-provider-gigahost && golangci-lint run --timeout=10m ./...)
             '';
 
-            fmt = mkApp "fmt" ''
+            fmt = mkApp "fmt" "Format Go sources and Terraform examples" ''
               gofumpt -w .
               tofu fmt -recursive terraform-provider-gigahost/examples
               golangci-lint run --fix --timeout=10m ./... || true
               (cd terraform-provider-gigahost && golangci-lint run --fix --timeout=10m ./... || true)
             '';
 
-            tidy = mkApp "tidy" ''
+            tidy = mkApp "tidy" "Run go mod tidy on both modules" ''
               go mod tidy
               (cd terraform-provider-gigahost && go mod tidy)
             '';
@@ -301,7 +305,7 @@
             # tfplugindocs 0.24 only knows how to download Terraform (which
             # fails: expired signing key, and we ship OpenTofu). So export the
             # schema with OpenTofu via a dev-override and feed it in.
-            tfdocs = mkApp "tfdocs" ''
+            tfdocs = mkApp "tfdocs" "Regenerate the provider registry docs" ''
               root="$PWD"
               tmp="$(mktemp -d)"
               trap 'rm -rf "$tmp"' EXIT
@@ -331,7 +335,7 @@
                 --providers-schema "$tmp/schema.json")
             '';
 
-            generate = mkApp "generate" ''
+            generate = mkApp "generate" "Run go generate" ''
               go generate ./...
             '';
           };
