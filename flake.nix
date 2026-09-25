@@ -23,7 +23,7 @@
       # Root module vendor hash. Shared between the overlay package and the
       # flake-checks `common` so it lives in one place. Recompute after
       # go.mod / go.sum changes (`nix-vendor-sri` in the devShell).
-      rootVendorHash = "sha256-Arw1OAiLbDdjP9khMlzhpaRqQvFehD4EX5sNqsiM7Lw=";
+      rootVendorHash = "sha256-yIB9is+pLnCYlqj/dhYRR3o3IWFzyzPm9SJ0T2qi7s4=";
     in
     {
       overlays.default =
@@ -39,7 +39,7 @@
           # mismatch — nix's cleanSource copy hashes differently from a local
           # `go mod vendor`. Built from the repo root via modRoot. The root
           # module hash is hoisted to the top-level `rootVendorHash`.
-          providerVendorHash = "sha256-5WWncUA7rgU8IuEgzBaY+1ti2Cl0y+OULOhDaqLFR7c=";
+          providerVendorHash = "sha256-eb48JI+BCeQlxotFreWOPLASWABpRSVVN8b1dzcXzm0=";
         in
         {
           gigahost = buildGo {
