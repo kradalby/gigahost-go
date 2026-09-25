@@ -10,11 +10,12 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , flake-utils
-    , flake-checks
-    , ...
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      flake-checks,
+      ...
     }:
     let
       version = self.shortRev or self.dirtyShortRev or "dev";
@@ -25,7 +26,8 @@
       rootVendorHash = "sha256-Arw1OAiLbDdjP9khMlzhpaRqQvFehD4EX5sNqsiM7Lw=";
     in
     {
-      overlays.default = _: prev:
+      overlays.default =
+        _: prev:
         let
           pkgs = nixpkgs.legacyPackages.${prev.stdenv.hostPlatform.system};
           buildGo = pkgs.buildGoLatestModule;
@@ -109,11 +111,14 @@
           # goimports ships wrapped with a `go` on PATH. That `go` must be at
           # least the go.mod directive, or GOTOOLCHAIN=auto tries to fetch a
           # toolchain from inside the network-less treefmt sandbox.
-          gotools = prev.gotools.override { buildGoModule = buildGo; go = pkgs.go_latest; };
+          gotools = prev.gotools.override {
+            buildGoModule = buildGo;
+            go = pkgs.go_latest;
+          };
         };
     }
-    // flake-utils.lib.eachDefaultSystem
-      (system:
+    // flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           overlays = [ self.overlays.default ];
@@ -138,9 +143,13 @@
           excludeSrc = [ ./terraform-provider-gigahost ];
         };
 
-        buildDeps = with pkgs; [ git go_latest ];
+        buildDeps = with pkgs; [
+          git
+          go_latest
+        ];
 
-        devDeps = with pkgs;
+        devDeps =
+          with pkgs;
           buildDeps
           ++ [
             # Go tooling built against the latest Go
@@ -154,7 +163,7 @@
             # Formatters / pre-commit stack
             prek
             prettier
-            nixpkgs-fmt
+            nixfmt
             python314Packages.mdformat
 
             # OpenTofu is the primary driver for local provider
@@ -177,32 +186,26 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs =
-            devDeps
-            ++ [
-              # Helper: recompute vendor sha for buildGoModule.
-              (pkgs.writeShellScriptBin
-                "nix-vendor-sri"
-                ''
-                  set -euo pipefail
-                  # The repo is a go.work workspace; `go mod vendor` refuses to
-                  # run in workspace mode, and the root hash is the root module.
-                  export GOWORK=off
-                  OUT=$(mktemp -d -t nar-hash-XXXXXX)
-                  trap 'rm -rf "$OUT"' EXIT
-                  go mod vendor -o "$OUT"
-                  ${pkgs.nix}/bin/nix hash path --type sha256 --sri "$OUT"
-                '')
+          buildInputs = devDeps ++ [
+            # Helper: recompute vendor sha for buildGoModule.
+            (pkgs.writeShellScriptBin "nix-vendor-sri" ''
+              set -euo pipefail
+              # The repo is a go.work workspace; `go mod vendor` refuses to
+              # run in workspace mode, and the root hash is the root module.
+              export GOWORK=off
+              OUT=$(mktemp -d -t nar-hash-XXXXXX)
+              trap 'rm -rf "$OUT"' EXIT
+              go mod vendor -o "$OUT"
+              ${pkgs.nix}/bin/nix hash path --type sha256 --sri "$OUT"
+            '')
 
-              # Helper: bulk-upgrade direct module deps.
-              (pkgs.writeShellScriptBin
-                "go-mod-update-all"
-                ''
-                  set -euo pipefail
-                  ${pkgs.ripgrep}/bin/rg '^\t' go.mod | ${pkgs.ripgrep}/bin/rg -v indirect | ${pkgs.gawk}/bin/awk '{print $1}' | ${pkgs.findutils}/bin/xargs go get -u
-                  go mod tidy
-                '')
-            ];
+            # Helper: bulk-upgrade direct module deps.
+            (pkgs.writeShellScriptBin "go-mod-update-all" ''
+              set -euo pipefail
+              ${pkgs.ripgrep}/bin/rg '^\t' go.mod | ${pkgs.ripgrep}/bin/rg -v indirect | ${pkgs.gawk}/bin/awk '{print $1}' | ${pkgs.findutils}/bin/xargs go get -u
+              go mod tidy
+            '')
+          ];
 
           shellHook = ''
             export PATH="$PWD/result/bin:$PATH"
@@ -240,7 +243,8 @@
         apps =
           let
             binPath = pkgs.lib.makeBinPath devDeps;
-            mkApp = name: text:
+            mkApp =
+              name: text:
               flake-utils.lib.mkApp {
                 drv = pkgs.writeShellScriptBin name ''
                   set -euo pipefail
@@ -329,5 +333,6 @@
               go generate ./...
             '';
           };
-      });
+      }
+    );
 }
