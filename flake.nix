@@ -302,9 +302,9 @@
               (cd terraform-provider-gigahost && go mod tidy)
             '';
 
-            # tfplugindocs 0.24 only knows how to download Terraform (which
-            # fails: expired signing key, and we ship OpenTofu). So export the
-            # schema with OpenTofu via a dev-override and feed it in.
+            # tfplugindocs only knows how to download Terraform, and we ship
+            # OpenTofu. So export the schema with OpenTofu via a dev-override
+            # and feed it in.
             tfdocs = mkApp "tfdocs" "Regenerate the provider registry docs" ''
               root="$PWD"
               tmp="$(mktemp -d)"
