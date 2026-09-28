@@ -927,6 +927,12 @@ func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 		return
 	}
 
+	// No change: Update will not run, so nothing may be marked unknown, or
+	// every plan shows the server updating in place.
+	if req.Plan.Raw.Equal(req.State.Raw) {
+		return
+	}
+
 	var state, plan serverResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)

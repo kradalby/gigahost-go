@@ -386,3 +386,33 @@ func serverRawValue(src *bootSource) tftypes.Value {
 		"timeouts":      tftypes.NewValue(timeoutsType, nil),
 	})
 }
+
+// TestServerNoOpPlanIsEmpty is the perpetual diff: an unchanged server must
+// plan exactly its prior state. Marking the runtime facts unknown on every
+// plan made each existing server show "update in-place" forever.
+func TestServerNoOpPlanIsEmpty(t *testing.T) {
+	t.Parallel()
+
+	h := newHarness(t)
+	objType := h.resourceObjectType("gigahost_server")
+
+	prior := managedServerState(objType, "debian-12")
+	config := mkObject(objType, map[string]tftypes.Value{
+		"type": tfStr("value"), "size": tfStr("2c-4gb-40gb"), "os": tfStr("debian-12"),
+	})
+
+	res := h.plan("gigahost_server", prior, config)
+	if res.HasError() {
+		t.Fatalf("plan: %s", res.ErrorText())
+	}
+
+	for _, attr := range runtimeAttrs {
+		if res.Unknown(attr) {
+			t.Errorf("%q is unknown in a no-op plan; the server shows an update on every plan", attr)
+		}
+	}
+
+	if !res.plannedValue.Equal(prior) {
+		t.Error("no-op plan differs from prior state")
+	}
+}
