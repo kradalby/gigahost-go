@@ -73,6 +73,7 @@ jobs:
         env:
           TF_ACC: "1"
           GIGAHOST_TOKEN: ${{ secrets.GIGAHOST_TOKEN }}
+          GIGAHOST_TEST_ZONE_APEX: ${{ vars.GIGAHOST_TEST_ZONE_APEX }}
           TF_VERSION: "1.16.4"
           TF_SHA256: "dc94af0eef1147718ad7c8daea792ed199e3e0492eec180d0adafa2a65a879df"
         run: |
