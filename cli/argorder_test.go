@@ -56,6 +56,17 @@ func TestHoistFlags(t *testing.T) {
 			want: []string{"dns", "zones", "create", "--", "--weird-zone-name"},
 		},
 		{
+			// Hoisting past the command path handed --name to the root parser.
+			name: "global flag before the command path",
+			args: []string{"-o", "json", "account", "ssh-keys", "add", "--name", "k", "--data", "ssh-ed25519 AAAA"},
+			want: []string{"-o", "json", "account", "ssh-keys", "add", "--name", "k", "--data", "ssh-ed25519 AAAA"},
+		},
+		{
+			name: "global flag before the command path, flag after positional",
+			args: []string{"-o", "json", "dns", "zones", "create", "example.no", "--type", "NATIVE"},
+			want: []string{"-o", "json", "dns", "zones", "create", "--type", "NATIVE", "example.no"},
+		},
+		{
 			name: "subcommand names are never hoisted past",
 			args: []string{"servers", "get", "web01"},
 			want: []string{"servers", "get", "web01"},

@@ -119,14 +119,27 @@ func hoistFlags(root *ff.Command, args []string) []string {
 	return out
 }
 
-// commandPathLen returns how many leading arguments name subcommands, so the
-// caller knows where the command path ends and its arguments begin.
+// commandPathLen returns how many leading arguments make up the command path,
+// so the caller knows where the command path ends and its arguments begin.
+// Flags written between subcommand names (`-o json account ...`) belong to an
+// ancestor and stay in the path; stopping at them would hoist the leaf's own
+// flags ahead of the subcommand names, where the root parser rejects them.
 func commandPathLen(cmd *ff.Command, args []string) int {
 	n := 0
 
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "-") {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+
+		if arg == "--" {
 			break
+		}
+
+		if strings.HasPrefix(arg, "-") && arg != "-" {
+			if !strings.Contains(arg, "=") && takesValue[arg] {
+				i++
+			}
+
+			continue
 		}
 
 		next := findSubcommand(cmd, arg)
@@ -135,7 +148,7 @@ func commandPathLen(cmd *ff.Command, args []string) int {
 		}
 
 		cmd = next
-		n++
+		n = i + 1
 	}
 
 	return n
