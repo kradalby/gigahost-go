@@ -9,15 +9,6 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: gomod
-    directory: /terraform-provider-gigahost
-    schedule:
-      interval: weekly
-    groups:
-      go-dependencies:
-        patterns:
-          - "*"
-
   - package-ecosystem: github-actions
     directory: /
     schedule:

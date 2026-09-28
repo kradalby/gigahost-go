@@ -2,8 +2,9 @@ package tfprovider
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,12 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-// Repo layout, relative to this package (tfprovider/). The registry docs and
-// examples live in the nested shim module; the project README lists coverage.
-const (
-	shimDir    = "../terraform-provider-gigahost"
-	readmePath = "../README.md"
-)
+// readmePath is relative to this package; registry docs and examples are
+// gated in terraform-provider-gigahost, against the commit it pins.
+const readmePath = "../README.md"
 
 // registeredTypes returns the gigahost_* type names the provider registers,
 // split into resources and data sources, by asking each one for its Metadata.
@@ -48,18 +46,16 @@ func registeredTypes(t *testing.T) ([]string, []string) {
 	return resources, dataSources
 }
 
-// TestDocsCoverage is the consistency gate: every registered resource and data
-// source must ship a generated registry doc, a runnable example, and a mention
-// in the project README. It fails the moment a new one is added without them,
-// which is how the README and docs are kept in sync over time.
-func TestDocsCoverage(t *testing.T) {
+// TestReadmeCoverage fails the moment a resource or data source is added
+// without a mention in the project README coverage list.
+func TestReadmeCoverage(t *testing.T) {
 	t.Parallel()
 
-	if _, err := os.Stat(shimDir); err != nil {
-		t.Skipf("registry shim not present (%v); coverage check is repo-only", err)
+	readme, err := os.ReadFile(readmePath)
+	if errors.Is(err, fs.ErrNotExist) {
+		t.Skip("README not in the source tree (nix sandbox); coverage check is repo-only")
 	}
 
-	readme, err := os.ReadFile(readmePath)
 	if err != nil {
 		t.Fatalf("read README: %v", err)
 	}
@@ -68,26 +64,14 @@ func TestDocsCoverage(t *testing.T) {
 
 	resources, dataSources := registeredTypes(t)
 
-	check := func(kind, dir string, names []string) {
+	check := func(kind string, names []string) {
 		for _, name := range names {
-			short := strings.TrimPrefix(name, "gigahost_")
-
-			doc := filepath.Join(shimDir, "docs", dir, short+".md")
-			if _, err := os.Stat(doc); err != nil {
-				t.Errorf("%s %q: missing generated doc %s (run 'nix run .#tfdocs')", kind, name, doc)
-			}
-
-			example := filepath.Join(shimDir, "examples", dir, name)
-			if _, err := os.Stat(example); err != nil {
-				t.Errorf("%s %q: missing example dir %s", kind, name, example)
-			}
-
 			if !strings.Contains(readmeText, name) {
 				t.Errorf("%s %q: not mentioned in README coverage", kind, name)
 			}
 		}
 	}
 
-	check("resource", "resources", resources)
-	check("data source", "data-sources", dataSources)
+	check("resource", resources)
+	check("data source", dataSources)
 }

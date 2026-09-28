@@ -6,9 +6,9 @@
 // OpenTofu is the primary development target.
 //
 // This package contains all the provider, resource and data source
-// definitions. It is imported and launched by the thin binary in the
-// sibling terraform-provider-gigahost module (destined for its own
-// GitHub repository and both the OpenTofu and Terraform registries).
+// definitions. It is imported and launched by the thin binary in
+// github.com/kradalby/terraform-provider-gigahost, which is what both
+// the OpenTofu and Terraform registries publish.
 //
 // # Running the provider
 //

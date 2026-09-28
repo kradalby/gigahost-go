@@ -14,11 +14,6 @@ provider offering servers, DNS, domain registration, BGP peering and more.
 - [`cmd/gigahost`](./cmd/gigahost) — `gigahost` CLI binary.
 - [`tfprovider`](./tfprovider) — OpenTofu / Terraform provider
   implementation.
-- [`terraform-provider-gigahost`](./terraform-provider-gigahost) — nested Go
-  module holding the registry docs templates, examples and CHANGELOG. Its
-  `docs/` and `examples/` are copied into
-  [kradalby/terraform-provider-gigahost](https://github.com/kradalby/terraform-provider-gigahost)
-  at release time, which publishes as `kradalby/gigahost` on both registries.
 
 ## Quick start
 
@@ -130,8 +125,8 @@ slugs (`type = "value"`, `size = "2c-4gb-40gb"`, `os = "debian-12"`,
 value (`gigahost deploy types|sizes|regions|os|isos`). `*_id` attributes are
 always cross-resource references wired through the dependency graph.
 
-Generated reference documentation lives in
-[`terraform-provider-gigahost/docs`](./terraform-provider-gigahost/docs); the Go
+Registry docs, examples and the CHANGELOG live in
+[kradalby/terraform-provider-gigahost](https://github.com/kradalby/terraform-provider-gigahost/tree/main/docs); the Go
 client and CLI cover the remaining endpoints (power, ISO, IPMI, upgrades, dyndns,
 invoices/billing, and account user management). Power and resize are not exposed
 as Terraform resources because they are not supported on the hourly cloud VPS
@@ -151,7 +146,6 @@ $ nix run .#test       # unit tests (both modules, race + -short)
 $ nix run .#lint       # golangci-lint
 $ nix run .#fmt        # gofumpt + golangci-lint --fix
 $ nix run .#tidy       # go mod tidy
-$ nix run .#tfdocs     # regenerate Terraform Registry docs
 $ nix build .#gigahost # build the CLI
 
 # Live tests against the API (need GIGAHOST_TOKEN):
@@ -184,17 +178,10 @@ $ prek run --all-files
 
 ## Releasing
 
-The provider ships from
+This module is untagged. The provider ships from
 [kradalby/terraform-provider-gigahost](https://github.com/kradalby/terraform-provider-gigahost),
-a minimal shim whose go.mod pins this module — never edit it beyond the
-version bump:
-
-```console
-$ git tag vX.Y.Z && git push origin vX.Y.Z   # here
-$ cd ../terraform-provider-gigahost
-$ nix run .#bump -- vX.Y.Z                   # pins module, regenerates docs, tags
-$ git push origin main vX.Y.Z                # goreleaser releases; registries ingest
-```
+which pins a commit of this module, regenerates its docs from the schema here,
+and carries the version tags; see its README.
 
 ## Project design
 

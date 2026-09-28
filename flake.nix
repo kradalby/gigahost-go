@@ -31,15 +31,6 @@
         let
           pkgs = nixpkgs.legacyPackages.${prev.stdenv.hostPlatform.system};
           buildGo = pkgs.buildGoLatestModule;
-          # Provider vendor hash (no in-tree vendor dir). The provider is a
-          # nested module that replaces the parent (=> ../), so its vendor tree
-          # contains the root module's own *.go files: recompute after any root
-          # Go source change, not just go.mod / go.sum. Take the value from the
-          # `got:` line of a deliberate `nix build .#terraform-provider-gigahost`
-          # mismatch — nix's cleanSource copy hashes differently from a local
-          # `go mod vendor`. Built from the repo root via modRoot. The root
-          # module hash is hoisted to the top-level `rootVendorHash`.
-          providerVendorHash = "sha256-eb48JI+BCeQlxotFreWOPLASWABpRSVVN8b1dzcXzm0=";
         in
         {
           gigahost = buildGo {
@@ -49,8 +40,6 @@
 
             subPackages = [ "cmd/gigahost" ];
 
-            # The repo is a go workspace; vendoring must not run in workspace mode.
-            env.GOWORK = "off";
             vendorHash = rootVendorHash;
 
             ldflags = [
@@ -69,36 +58,6 @@
               homepage = "https://github.com/kradalby/gigahost-go";
               license = pkgs.lib.licenses.bsd3;
               mainProgram = "gigahost";
-            };
-          };
-
-          terraform-provider-gigahost = buildGo {
-            pname = "terraform-provider-gigahost";
-            inherit version;
-            # The Terraform provider lives in its own Go module inside a
-            # subdirectory so it can be split off to its own repository for
-            # Terraform Registry publishing. We build from that subdirectory
-            # using the local workspace.
-            src = pkgs.lib.cleanSource self;
-            modRoot = "terraform-provider-gigahost";
-
-            env.GOWORK = "off";
-            vendorHash = providerVendorHash;
-
-            ldflags = [
-              "-s"
-              "-w"
-              "-X main.version=${version}"
-              "-X main.commit=${commitHash}"
-            ];
-
-            checkFlags = [ ];
-
-            meta = {
-              description = "Terraform provider for gigahost.no";
-              homepage = "https://github.com/kradalby/terraform-provider-gigahost";
-              license = pkgs.lib.licenses.bsd3;
-              mainProgram = "terraform-provider-gigahost";
             };
           };
 
@@ -121,10 +80,7 @@
           inherit system;
         };
 
-        # flake-checks: cache-friendly Go gate checks. The repo is two Go
-        # modules — the root API client/CLI, and a nested Terraform provider
-        # in its own module — so each gets its own `common` and distinct
-        # check names.
+        # flake-checks: cache-friendly Go gate checks.
         fc = flake-checks.lib;
 
         common = {
@@ -135,8 +91,6 @@
           goPkg = pkgs.go_latest;
           # client/*_test.go decode fixtures from client/testdata.
           extraSrc = [ ./client/testdata ];
-          # The nested provider is its own Go module — keep it out of the root.
-          excludeSrc = [ ./terraform-provider-gigahost ];
         };
 
         buildDeps = with pkgs; [
@@ -168,10 +122,6 @@
             # speaks the same plugin protocol, so the provider works
             # unmodified against either.
             opentofu
-            # tfplugindocs generates Registry-compatible provider docs;
-            # the output works for both the Terraform and OpenTofu
-            # registries.
-            terraform-plugin-docs
 
             # Utilities
             ripgrep
@@ -186,9 +136,6 @@
             # Helper: recompute vendor sha for buildGoModule.
             (pkgs.writeShellScriptBin "nix-vendor-sri" ''
               set -euo pipefail
-              # The repo is a go.work workspace; `go mod vendor` refuses to
-              # run in workspace mode, and the root hash is the root module.
-              export GOWORK=off
               OUT=$(mktemp -d -t nar-hash-XXXXXX)
               trap 'rm -rf "$OUT"' EXIT
               go mod vendor -o "$OUT"
@@ -214,22 +161,16 @@
 
         formatter = fc.formatter common;
 
-        # Go CI gate, one job per check (see .github/workflows). Root module
-        # and nested provider module get distinct names.
-        # Root module gets the full lib gate. The nested provider is a separate
-        # module that replaces the parent (=> ../) under a go.work, so it can't
-        # use the single-root lib checks — gate its compile via its package
-        # (built with modRoot + GOWORK=off); root `formatting` covers its *.go.
+        # Go CI gate, one job per check (see .github/workflows).
         checks = {
           build = fc.goBuild common;
           gotest = fc.goTest (common // { goRace = true; });
           golangci-lint = fc.goLint common;
           formatting = fc.goFormat common;
-          build-provider = pkgs.terraform-provider-gigahost;
         };
 
         packages = {
-          inherit (pkgs) gigahost terraform-provider-gigahost;
+          inherit (pkgs) gigahost;
           default = pkgs.gigahost;
         };
 
@@ -259,12 +200,10 @@
           in
           {
             gigahost = pkgApp pkgs.gigahost;
-            terraform-provider-gigahost = pkgApp pkgs.terraform-provider-gigahost;
             default = pkgApp pkgs.gigahost;
 
-            test = mkApp "test" "Run the unit tests of both modules with -race" ''
+            test = mkApp "test" "Run the unit tests with -race" ''
               go test -race ./...
-              (cd terraform-provider-gigahost && go test -race ./...)
             '';
 
             test-acc = mkApp "test-acc" "Run the provider acceptance tests against the live API" ''
@@ -279,54 +218,17 @@
               go test -tags e2e -v -timeout 30m ./e2e/... ./cli/...
             '';
 
-            lint = mkApp "lint" "Run golangci-lint on both modules" ''
+            lint = mkApp "lint" "Run golangci-lint" ''
               golangci-lint run --timeout=10m ./...
-              (cd terraform-provider-gigahost && golangci-lint run --timeout=10m ./...)
             '';
 
-            fmt = mkApp "fmt" "Format Go sources and Terraform examples" ''
+            fmt = mkApp "fmt" "Format Go sources" ''
               gofumpt -w .
-              tofu fmt -recursive terraform-provider-gigahost/examples
               golangci-lint run --fix --timeout=10m ./... || true
-              (cd terraform-provider-gigahost && golangci-lint run --fix --timeout=10m ./... || true)
             '';
 
-            tidy = mkApp "tidy" "Run go mod tidy on both modules" ''
+            tidy = mkApp "tidy" "Run go mod tidy" ''
               go mod tidy
-              (cd terraform-provider-gigahost && go mod tidy)
-            '';
-
-            # tfplugindocs only knows how to download Terraform, and we ship
-            # OpenTofu. So export the schema with OpenTofu via a dev-override
-            # and feed it in.
-            tfdocs = mkApp "tfdocs" "Regenerate the provider registry docs" ''
-              root="$PWD"
-              tmp="$(mktemp -d)"
-              trap 'rm -rf "$tmp"' EXIT
-              (cd "$root/terraform-provider-gigahost" && go build -o "$tmp/terraform-provider-gigahost" .)
-              cat > "$tmp/dev.tfrc" <<EOF
-              provider_installation {
-                dev_overrides { "registry.terraform.io/hashicorp/gigahost" = "$tmp" }
-                direct {}
-              }
-              EOF
-              mkdir -p "$tmp/cfg"
-              cat > "$tmp/cfg/main.tf" <<EOF
-              terraform {
-                required_providers {
-                  gigahost = {
-                    source = "registry.terraform.io/hashicorp/gigahost"
-                  }
-                }
-              }
-
-              provider "gigahost" {}
-              EOF
-              (cd "$tmp/cfg" && TF_CLI_CONFIG_FILE="$tmp/dev.tfrc" tofu providers schema -json > "$tmp/schema.json" 2>/dev/null)
-              (cd "$root/terraform-provider-gigahost" && tfplugindocs generate \
-                --provider-name gigahost \
-                --rendered-provider-name Gigahost \
-                --providers-schema "$tmp/schema.json")
             '';
 
             generate = mkApp "generate" "Run go generate" ''

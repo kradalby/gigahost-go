@@ -1,6 +1,5 @@
 # Binaries
 /gigahost
-/terraform-provider-gigahost/terraform-provider-gigahost
 
 # Build artifacts
 /dist/

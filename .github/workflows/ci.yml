@@ -11,8 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 # Gate jobs only call `nix build .#checks.<sys>.<name>`; the check logic lives
-# in flake.nix. Root module gets the full gate; the nested provider compile is
-# gated via build-provider.
+# in flake.nix.
 permissions:
   contents: read
 
@@ -52,18 +51,6 @@ jobs:
         uses: Mic92/hestia@dfed9ced335d28978ba74e513939a10db1f71025 # v3.1.0
       - name: golangci-lint
         run: nix build -L .#checks.x86_64-linux.golangci-lint
-
-  build-provider:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Nix
-        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6 # v1.0.0
-      - name: Setup Nix cache (hestia)
-        uses: Mic92/hestia@dfed9ced335d28978ba74e513939a10db1f71025 # v3.1.0
-      - name: build-provider
-        run: nix build -L .#checks.x86_64-linux.build-provider
 
   formatting:
     runs-on: ubuntu-latest

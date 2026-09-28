@@ -22,7 +22,6 @@ linters:
     - gocognit
     - goconst # schema attribute names/descriptions repeat by nature; noise
     - godox
-    - gomoddirectives # the nested provider module replaces ../ on purpose
     - gomodguard # superseded by gomodguard_v2
     - inamedparam # our interface declarations intentionally use bare types
     - interfacebloat
@@ -106,10 +105,6 @@ linters:
           - gosec
           - noctx
           - unparam
-      # The shim re-exports; it's almost entirely boilerplate.
-      - path: terraform-provider-gigahost/
-        linters:
-          - forbidigo
 
 formatters:
   enable:

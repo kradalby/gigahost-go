@@ -7,7 +7,7 @@
 # direnv). CI workflows wrap `prek run --all-files` with
 # `nix develop --command` for the same effect.
 
-exclude: (testdata/|^docs/|^terraform-provider-gigahost/docs/)
+exclude: (testdata/|^docs/)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -47,51 +47,24 @@ repos:
         language: system
         types: [go]
 
-      - id: tofu-fmt
-        name: tofu fmt (examples)
-        entry: tofu fmt -recursive terraform-provider-gigahost/examples
-        language: system
-        types: [terraform]
-        pass_filenames: false
-
       - id: golangci-lint
-        name: golangci-lint (root module)
+        name: golangci-lint
         entry: golangci-lint run --timeout=5m --fix
         language: system
         types: [go]
         pass_filenames: false
 
-      - id: golangci-lint-tfprovider
-        name: golangci-lint (terraform-provider-gigahost module)
-        entry: bash -c 'cd terraform-provider-gigahost && golangci-lint run --timeout=5m --fix'
-        language: system
-        types: [go]
-        pass_filenames: false
-
       - id: go-test
-        name: go test (root module)
+        name: go test
         entry: go test -timeout=5m ./...
-        language: system
-        types: [go]
-        pass_filenames: false
-
-      - id: go-test-tfprovider
-        name: go test (terraform-provider-gigahost module)
-        entry: bash -c 'cd terraform-provider-gigahost && go test -timeout=5m ./...'
         language: system
         types: [go]
         pass_filenames: false
 
       - id: nix-build-checks
         name: nix build (gated flake checks)
-        entry: bash -c 'nix build --fallback .#checks.x86_64-linux.build .#checks.x86_64-linux.golangci-lint .#checks.x86_64-linux.formatting .#checks.x86_64-linux.build-provider'
+        entry: bash -c 'nix build --fallback .#checks.x86_64-linux.build .#checks.x86_64-linux.golangci-lint .#checks.x86_64-linux.formatting'
         language: system
-        # build-provider is included, and the pattern covers Go sources, because
-        # providerVendorHash is a hash of the *parent* module's own source: the
-        # nested provider module replaces `../`, so `go mod vendor` copies
-        # client/ and tfprovider/ into the fixed-output derivation. The hash
-        # therefore moves on every Go edit, not just on go.mod changes. A
-        # pattern matching only flake/go.mod let a whole branch of commits land
-        # with a stale hash.
-        files: ^(flake\.(nix|lock)|go\.(mod|sum)|(client|tfprovider|cli|testhelper)/.*\.go)$
+        # rootVendorHash moves only with the module graph.
+        files: ^(flake\.(nix|lock)|go\.(mod|sum))$
         pass_filenames: false
