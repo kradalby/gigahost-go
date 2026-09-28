@@ -292,6 +292,101 @@ func accPickOS(t *testing.T, c *gigahost.Client) string {
 	return all[0].Slug
 }
 
+// accPickDistro resolves the newest OS slug of one distribution, skipping the
+// test when the catalog does not offer it.
+func accPickDistro(t *testing.T, c *gigahost.Client, distro string) string {
+	t.Helper()
+
+	all, err := c.Reinstall.ListAllOperatingSystems(accCtx)
+	if err != nil {
+		t.Fatalf("accPickDistro: %v", err)
+	}
+
+	slug := ""
+
+	for _, o := range all {
+		if strings.EqualFold(o.Distribution.Value, distro) {
+			slug = o.Slug
+		}
+	}
+
+	if slug == "" {
+		t.Skipf("catalog offers no %s", distro)
+	}
+
+	return slug
+}
+
+// TestAccServer_perOS deploys one server per distribution the demo relies on.
+// Gigahost injects SSH keys from a per-OS installer template, so each family
+// needs its own login check. The records are fed from the server's own ip and
+// ipv6: the servers API spells IPv6 differently from the DNS API, and the
+// framework's post-apply re-plan fails on any drift that causes.
+func TestAccServer_perOS(t *testing.T) {
+	t.Parallel()
+
+	client := testAccGigahostClient(t)
+	typeSlug, sizeSlug := accCheapestTarget(t, client)
+
+	for _, distro := range []string{"debian", "ubuntu"} {
+		t.Run(distro, func(t *testing.T) {
+			t.Parallel()
+
+			osSlug := accPickDistro(t, client, distro)
+			zoneName := accZoneName(t, "srv-"+distro)
+			pub, signer := accEphemeralKey(t)
+
+			var serverID string
+
+			resource.Test(t, resource.TestCase{
+				PreCheck:                 func() { testAccPreCheck(t) },
+				ProtoV6ProviderFactories: testAccProviderFactories,
+				CheckDestroy: resource.ComposeTestCheckFunc(
+					testAccCheckServerCancelled(client, &serverID),
+					testAccCheckDNSZoneDestroyed(client, zoneName),
+				),
+				Steps: []resource.TestStep{
+					{
+						Config: testAccServerConfigHost(accRandName("srv-"+distro), pub, typeSlug, sizeSlug, osSlug, "") +
+							testAccServerRecordsConfig(zoneName),
+						Check: resource.ComposeAggregateTestCheckFunc(
+							captureAttr("gigahost_server.test", "id", &serverID),
+							accSSHLogin("gigahost_server.test", signer),
+							resource.TestCheckResourceAttrPair("gigahost_dns_record.a", "value", "gigahost_server.test", "ip"),
+							resource.TestCheckResourceAttrPair("gigahost_dns_record.aaaa", "value", "gigahost_server.test", "ipv6"),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
+func testAccServerRecordsConfig(zoneName string) string {
+	return fmt.Sprintf(`
+resource "gigahost_dns_zone" "test" {
+  name = %q
+  type = "NATIVE"
+}
+
+resource "gigahost_dns_record" "a" {
+  zone_id = gigahost_dns_zone.test.id
+  name    = "srv"
+  type    = "A"
+  value   = gigahost_server.test.ip
+  ttl     = 60
+}
+
+resource "gigahost_dns_record" "aaaa" {
+  zone_id = gigahost_dns_zone.test.id
+  name    = "srv"
+  type    = "AAAA"
+  value   = gigahost_server.test.ipv6
+  ttl     = 60
+}
+`, zoneName)
+}
+
 // captureAttr records a resource attribute value into dst during a test step.
 func captureAttr(name, attr string, dst *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
