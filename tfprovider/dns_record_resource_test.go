@@ -117,6 +117,22 @@ func TestDNSValueForState(t *testing.T) {
 			recordType: gigahost.RecordTypeA,
 			want:       "1.2.3.5",
 		},
+		{
+			// The servers API spells IPv6 with "::" for one zero group; the DNS
+			// API stores RFC 5952. Same address, so keep the configured form.
+			name:       "AAAA same address different spelling keeps prior form",
+			prior:      types.StringValue("2001:db8:ffff:1:2:3::195"),
+			apiValue:   "2001:db8:ffff:1:2:3:0:195",
+			recordType: gigahost.RecordTypeAAAA,
+			want:       "2001:db8:ffff:1:2:3::195",
+		},
+		{
+			name:       "AAAA genuine change stores API form",
+			prior:      types.StringValue("2001:db8::1"),
+			apiValue:   "2001:db8::2",
+			recordType: gigahost.RecordTypeAAAA,
+			want:       "2001:db8::2",
+		},
 	}
 
 	for _, tt := range tests {
@@ -129,5 +145,22 @@ func TestDNSValueForState(t *testing.T) {
 					tt.prior, tt.apiValue, tt.recordType, got, tt.want)
 			}
 		})
+	}
+}
+
+// TestMatchRecordIPv6Spelling is the "record not found after create" bug: a
+// record created from gigahost_server.ipv6 ("…:3::195") is stored by the DNS
+// API as RFC 5952 ("…:3:0:195"), and a string compare never finds it.
+func TestMatchRecordIPv6Spelling(t *testing.T) {
+	t.Parallel()
+
+	records := []gigahost.DNSRecord{
+		{ID: "a", Name: "vpn", Type: gigahost.RecordTypeA, Value: "192.0.2.11"},
+		{ID: "aaaa", Name: "vpn", Type: gigahost.RecordTypeAAAA, Value: "2001:db8:ffff:1:2:3:0:195"},
+	}
+
+	got := matchRecord(records, "vpn", "AAAA", "2001:db8:ffff:1:2:3::195")
+	if got == nil || got.ID != "aaaa" {
+		t.Fatalf("matchRecord = %v, want the AAAA record stored in RFC 5952 form", got)
 	}
 }

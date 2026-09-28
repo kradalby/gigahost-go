@@ -3,6 +3,7 @@ package tfprovider
 import (
 	"context"
 	"fmt"
+	"net/netip"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -83,7 +84,8 @@ func (r *dnsRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					"the API returns the target with a trailing dot; if your configured value " +
 					"differs only by that dot the state keeps your form, so omitting the dot does " +
 					"not produce a perpetual diff. For TXT (and other content-valued types) the " +
-					"trailing dot is significant and is preserved verbatim.",
+					"trailing dot is significant and is preserved verbatim. A and AAAA values " +
+					"compare as addresses, so `2001:db8:1:2:3:4::5` and `2001:db8:1:2:3:4:0:5` are the same record.",
 				Required: true,
 			},
 			"ttl": schema.Int64Attribute{
@@ -280,10 +282,13 @@ func (r *dnsRecordResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	defer lockZone(state.ZoneID.ValueString())()
 
+	recordType := gigahost.RecordType(state.Type.ValueString())
+
+	// State may hold the configured address spelling; delete by the stored one.
 	deleteReq := gigahost.DeleteRecordRequest{
 		Name:  state.Name.ValueString(),
-		Type:  gigahost.RecordType(state.Type.ValueString()),
-		Value: state.Value.ValueString(),
+		Type:  recordType,
+		Value: canonicalAddress(recordType, state.Value.ValueString()),
 	}
 
 	// MX deletes are matched on "<priority> <target>." server-side, so the
@@ -365,9 +370,26 @@ func (m *dnsRecordModel) setFromRecord(zoneID string, rec *gigahost.DNSRecord) {
 
 // normalizeDNSValue strips a single trailing dot so values compare equal
 // regardless of whether the caller wrote the FQDN form; the API stores
-// hostnames without the trailing dot.
-func normalizeDNSValue(v string) string {
-	return strings.TrimSuffix(v, ".")
+// hostnames without the trailing dot. Addresses compare by canonical form.
+func normalizeDNSValue(recordType gigahost.RecordType, v string) string {
+	return canonicalAddress(recordType, strings.TrimSuffix(v, "."))
+}
+
+// canonicalAddress rewrites A/AAAA values into RFC 5952 form, the spelling the
+// DNS API stores. The servers API compresses a single zero group ("…:3::195"
+// for "…:3:0:195"), so a record fed gigahost_server.ipv6 never string-matches
+// the zone.
+func canonicalAddress(recordType gigahost.RecordType, v string) string {
+	if recordType != gigahost.RecordTypeA && recordType != gigahost.RecordTypeAAAA {
+		return v
+	}
+
+	addr, err := netip.ParseAddr(v)
+	if err != nil {
+		return v
+	}
+
+	return addr.String()
 }
 
 // hostnameValuedRecordTypes is the set of record types whose value is a
@@ -405,7 +427,12 @@ func dnsValueForState(prior types.String, apiValue string, recordType gigahost.R
 	}
 
 	if hostnameValuedRecordTypes[recordType] &&
-		normalizeDNSValue(priorValue) == normalizeDNSValue(apiValue) {
+		normalizeDNSValue(recordType, priorValue) == normalizeDNSValue(recordType, apiValue) {
+		return priorValue
+	}
+
+	// Same address, different spelling: keep the configured form.
+	if canonicalAddress(recordType, priorValue) == canonicalAddress(recordType, apiValue) {
 		return priorValue
 	}
 
@@ -420,7 +447,7 @@ func matchRecord(records []gigahost.DNSRecord, name, recordType, value string) *
 		name = "@"
 	}
 
-	wantValue := normalizeDNSValue(value)
+	wantValue := normalizeDNSValue(gigahost.RecordType(recordType), value)
 
 	// DNS names are case-insensitive and the API stores them lower-cased, so a
 	// record configured as "WWW" comes back as "www". A byte-exact match here
@@ -429,7 +456,7 @@ func matchRecord(records []gigahost.DNSRecord, name, recordType, value string) *
 	for i := range records {
 		if strings.EqualFold(records[i].Name, name) &&
 			string(records[i].Type) == recordType &&
-			normalizeDNSValue(records[i].Value) == wantValue {
+			normalizeDNSValue(records[i].Type, records[i].Value) == wantValue {
 			return &records[i]
 		}
 	}

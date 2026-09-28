@@ -168,6 +168,31 @@ func TestDNSRecordDestroyLeavesSiblings(t *testing.T) {
 	}
 }
 
+// TestDNSRecordDestroyIPv6Spelling guards the silent orphan: state keeps the
+// configured "…::195" while the zone holds RFC 5952 "…:0:195". Deleting by the
+// state spelling misses, the 404 reads as already-gone, and the record lives on.
+func TestDNSRecordDestroyIPv6Spelling(t *testing.T) {
+	t.Parallel()
+
+	h := newHarness(t)
+	objType := h.resourceObjectType("gigahost_dns_record")
+
+	zone := &zoneRecords{}
+	zone.add("r1", "vpn", "AAAA", "2001:db8:ffff:1:2:3:0:195", 60, nil)
+	wireRecordRoutes(h, "5000", zone)
+
+	state := recordState(objType, "5000", "r1", "vpn", "AAAA", "2001:db8:ffff:1:2:3::195")
+
+	res := h.apply("gigahost_dns_record", state, nullObject(objType), nullObject(objType))
+	if res.HasError() {
+		t.Fatalf("destroy: %s", res.ErrorText())
+	}
+
+	if got := zone.count(); got != 0 {
+		t.Errorf("zone holds %d records after destroy, want 0: the AAAA record was orphaned", got)
+	}
+}
+
 // TestDNSRecordDestroyIsIdempotent covers the case a user hits after the old
 // RRset bug: the record is already gone upstream, and destroy must succeed
 // rather than wedging the resource in state forever.
