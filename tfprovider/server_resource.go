@@ -1333,7 +1333,12 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		// state holding a password that no longer opens the machine.
 		plan.Password = stringOrNull(res.RootPasswd)
 
-		if err := r.waitForInstall(ctx, state.ID.ValueString()); err != nil {
+		password, err := r.waitForInstall(ctx, state.ID.ValueString())
+		if password != "" {
+			plan.Password = types.StringValue(password)
+		}
+
+		if err != nil {
 			plan.nullUnknownRuntime()
 			resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 			resp.Diagnostics.AddError("Reinstall did not settle",
@@ -1512,7 +1517,9 @@ func (r *serverResource) reinstall(ctx context.Context, serverID, osID, hostname
 }
 
 // waitForInstall polls until the server reports it is no longer installing.
-func (r *serverResource) waitForInstall(ctx context.Context, serverID string) error {
+// It returns the root password the running install exposed, the only place
+// the API shows it, even when the wait itself fails.
+func (r *serverResource) waitForInstall(ctx context.Context, serverID string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, reinstallTimeout)
 	defer cancel()
 
@@ -1523,6 +1530,8 @@ func (r *serverResource) waitForInstall(ctx context.Context, serverID string) er
 	// read reports only "context deadline exceeded" and loses the cause.
 	var lastErr error
 
+	password := ""
+
 	for {
 		srv, err := r.client.Servers.Get(ctx, serverID)
 		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
@@ -1532,17 +1541,21 @@ func (r *serverResource) waitForInstall(ctx context.Context, serverID string) er
 			lastErr = err
 		}
 
+		if err == nil && srv.InstallDetails != nil && srv.InstallDetails.RootPassword != "" {
+			password = srv.InstallDetails.RootPassword
+		}
+
 		if err == nil && !srv.StatusInstall {
-			return nil
+			return password, nil
 		}
 
 		select {
 		case <-ctx.Done():
 			if lastErr != nil {
-				return fmt.Errorf("%w (last read: %w)", ctx.Err(), lastErr)
+				return password, fmt.Errorf("%w (last read: %w)", ctx.Err(), lastErr)
 			}
 
-			return ctx.Err()
+			return password, ctx.Err()
 		case <-ticker.C:
 		}
 	}

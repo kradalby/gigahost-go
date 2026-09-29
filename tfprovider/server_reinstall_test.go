@@ -312,3 +312,46 @@ func TestServerReinstallSendsSSHKeys(t *testing.T) {
 		}
 	})
 }
+
+// TestServerReinstallCapturesInstallPassword: the reinstall response carries no
+// password; the running install's record does. It is the only chance to read it.
+func TestServerReinstallCapturesInstallPassword(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		objType := h.resourceObjectType("gigahost_server")
+
+		installing := `{"meta":{"status":200},"data":[{"srv_id":"18394","srv_status":true,` +
+			`"srv_status_install":true,"os_id":"101","srv_primary_ip":"192.0.2.10","ips":[],` +
+			`"install_details":{"root_password":"from-details","sshkey":false}}]}`
+
+		h.api.Route(http.MethodGet, "/reinstall/distro").Respond(http.StatusOK, distrosJSON)
+		h.api.Route(http.MethodGet, "/reinstall/distro/*").Respond(http.StatusOK, debianOSesJSON)
+		h.api.Route(http.MethodPost, "/servers/*").
+			Respond(http.StatusOK, `{"success":true,"reboot":true,"root_passwd":""}`)
+		h.api.Route(http.MethodGet, "/servers/*").RespondWith(func(_ *http.Request, call int) (int, string) {
+			if call == 1 {
+				return http.StatusOK, installing
+			}
+
+			return http.StatusOK, serverJSON("18394", "101")
+		})
+
+		prior := managedServerState(objType, "debian-11")
+		config := mkObject(objType, map[string]tftypes.Value{
+			"type": tfStr("value"), "size": tfStr("2c-4gb-40gb"), "os": tfStr("debian-12"),
+		})
+
+		planned := h.plan("gigahost_server", prior, config)
+		res := h.apply("gigahost_server", prior, planned.plannedValue, config)
+
+		if res.HasError() {
+			t.Fatalf("apply: %s", res.ErrorText())
+		}
+
+		if got := str(res.State, "password"); got != "from-details" {
+			t.Errorf("password = %q, want the one install_details exposed", got)
+		}
+	})
+}
