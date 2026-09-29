@@ -387,3 +387,36 @@ func TestServersGetGraphs(t *testing.T) {
 		t.Error("expected error for empty serverID")
 	}
 }
+
+// TestServerInstallDetails: while an install runs, the record carries the root
+// password and whether keys were injected. Deploy and reinstall responses do
+// not return the password; this is the only place it appears.
+func TestServerInstallDetails(t *testing.T) {
+	t.Parallel()
+
+	srv, c := newServerAndClient(t)
+
+	srv.Expect("GET", "/servers/18740").Respond(http.StatusOK,
+		`{"meta":{"status":200},"data":[{"srv_id":"18740","srv_status_install":"1",`+
+			`"install_details":{"root_password":"s3cret","date_started":"1790604360","prov_post":"","sshkey":false}}]}`)
+	srv.Expect("GET", "/servers/18739").Respond(http.StatusOK,
+		`{"meta":{"status":200},"data":[{"srv_id":"18739","srv_status_install":"0","install_details":null}]}`)
+
+	got, err := c.Servers.Get(context.Background(), "18740")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+
+	if got.InstallDetails == nil || got.InstallDetails.RootPassword != "s3cret" || got.InstallDetails.SSHKey {
+		t.Errorf("InstallDetails = %+v, want root password s3cret, sshkey false", got.InstallDetails)
+	}
+
+	done, err := c.Servers.Get(context.Background(), "18739")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+
+	if done.InstallDetails != nil {
+		t.Errorf("InstallDetails = %+v, want nil once installed", done.InstallDetails)
+	}
+}

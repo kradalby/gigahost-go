@@ -152,6 +152,17 @@ type Server struct {
 
 	OS  *ServerOS
 	IPs []ServerIP
+
+	// InstallDetails is set only while an OS install runs.
+	InstallDetails *InstallDetails
+}
+
+// InstallDetails describes a running OS install. RootPassword is the only
+// place the API exposes the root password; deploy and reinstall responses
+// leave it empty. It is empty when SSH keys were injected.
+type InstallDetails struct {
+	RootPassword string
+	SSHKey       bool
 }
 
 // UnmarshalJSON handles the shape of the Gigahost server record,
@@ -192,6 +203,11 @@ func (s *Server) UnmarshalJSON(data []byte) error {
 
 		OS  *ServerOS  `json:"os"`
 		IPs []ServerIP `json:"ips"`
+
+		InstallDetails *struct {
+			RootPassword string  `json:"root_password"`
+			SSHKey       apiBool `json:"sshkey"`
+		} `json:"install_details"`
 	}
 
 	var r raw
@@ -228,6 +244,10 @@ func (s *Server) UnmarshalJSON(data []byte) error {
 		Suspended:        bool(r.Suspended),
 		OS:               r.OS,
 		IPs:              r.IPs,
+	}
+
+	if d := r.InstallDetails; d != nil {
+		s.InstallDetails = &InstallDetails{RootPassword: d.RootPassword, SSHKey: bool(d.SSHKey)}
 	}
 
 	return nil
