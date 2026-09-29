@@ -1,6 +1,7 @@
 package tfprovider
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -225,7 +226,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"against the live catalog at create time — list them with `gigahost deploy " +
 			"types|sizes|regions|os` or the `gigahost_server_size`/`gigahost_operating_system` " +
 			"data sources. Changing `os` **reinstalls the server in place** (same ID and IP, " +
-			"**disk wiped**, SSH keys not re-injected); every other input change replaces the " +
+			"**disk wiped**, `ssh_keys` re-authorized); every other input change replaces the " +
 			"server. Destroying the resource cancels the server and stops billing.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -279,8 +280,8 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "Operating system slug, e.g. `debian-12` (list with `gigahost " +
 					"deploy os`; codenames like `bookworm` also resolve). Exactly one of `os`, " +
 					"`iso`, or `rescue`. Changing this between two OS slugs **reinstalls the server " +
-					"in place**: the ID and IP are kept, but **the disk is wiped** and SSH keys are " +
-					"not re-injected. Transitions involving `iso` or `rescue` replace the server.",
+					"in place**: the ID and IP are kept, **the disk is wiped** and `ssh_keys` are " +
+					"authorized again. Transitions involving `iso` or `rescue` replace the server.",
 				Optional: true,
 				// Replacement vs in-place reinstall is decided in ModifyPlan.
 			},
@@ -985,7 +986,7 @@ func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	resp.Diagnostics.AddWarning(
 		"In-place OS reinstall",
 		fmt.Sprintf("Changing os from %s to %s reinstalls the operating system on server %s in place: "+
-			"the server ID and IP are kept, but ALL DATA ON DISK IS WIPED and SSH keys are not re-injected. "+
+			"the server ID and IP are kept, but ALL DATA ON DISK IS WIPED; ssh_keys are authorized again. "+
 			"The root password rotates (see the password attribute after apply).",
 			state.OS.ValueString(), plan.OS.ValueString(), state.ID.ValueString()),
 	)
@@ -1317,10 +1318,9 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 			return
 		}
 
-		res, err := r.client.Reinstall.Reinstall(ctx, state.ID.ValueString(), gigahost.ReinstallRequest{
-			OSID:     resolved.OS.ID,
-			Hostname: plan.Hostname.ValueString(),
-		})
+		hostname := cmp.Or(plan.Hostname.ValueString(), state.Hostname.ValueString())
+
+		res, err := r.reinstall(ctx, state.ID.ValueString(), resolved.OS.ID, hostname, plan.SSHKeys)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to reinstall server", err.Error())
 
@@ -1495,6 +1495,20 @@ func ramGB(v int) int {
 	}
 
 	return v
+}
+
+// reinstall installs osID on serverID and authorizes keys on the new OS.
+func (r *serverResource) reinstall(ctx context.Context, serverID, osID, hostname string, keys types.List) (*gigahost.ReinstallResult, error) {
+	sshKeys, diags := listToStrings(ctx, keys)
+	if diags.HasError() {
+		return nil, fmt.Errorf("ssh_keys: %v", diags)
+	}
+
+	return r.client.Reinstall.Reinstall(ctx, serverID, gigahost.ReinstallRequest{
+		OSID:     osID,
+		Hostname: hostname,
+		SSHKeys:  sshKeys,
+	})
 }
 
 // waitForInstall polls until the server reports it is no longer installing.

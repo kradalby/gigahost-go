@@ -1,6 +1,7 @@
 package tfprovider
 
 import (
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -264,6 +265,50 @@ func TestServerReinstallWithoutPasswordIsNull(t *testing.T) {
 
 		if pw := res.State["password"]; !pw.IsNull() {
 			t.Errorf("password = %v, want null when the API returns none", pw)
+		}
+	})
+}
+
+// TestServerReinstallSendsSSHKeys: an os change re-authorizes the server's
+// keys. Without ssh_keys on the reinstall the new OS has none and is
+// unreachable.
+func TestServerReinstallSendsSSHKeys(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		objType := h.resourceObjectType("gigahost_server")
+
+		var sent string
+
+		h.api.Route(http.MethodGet, "/reinstall/distro").Respond(http.StatusOK, distrosJSON)
+		h.api.Route(http.MethodGet, "/reinstall/distro/*").Respond(http.StatusOK, debianOSesJSON)
+		h.api.Route(http.MethodPost, "/servers/*").RespondWith(func(r *http.Request, _ int) (int, string) {
+			b, _ := io.ReadAll(r.Body)
+			sent = string(b)
+
+			return http.StatusOK, reinstallOKJSON
+		})
+		h.api.Route(http.MethodGet, "/servers/*").Respond(http.StatusOK, serverJSON("18394", "101"))
+
+		prior := mkObject(objType, map[string]tftypes.Value{
+			"id": tfStr("18394"), "order_id": tfStr("34147"), "platform": tfStr("cloud"),
+			"type": tfStr("value"), "size": tfStr("2c-4gb-40gb"), "region": tfStr("sfj"),
+			"os": tfStr("debian-11"), "ssh_keys": tfStrList("2899"), "ip": tfStr("192.0.2.10"),
+			"ips": emptyList(objType, "ips"),
+		})
+		config := mkObject(objType, map[string]tftypes.Value{
+			"type": tfStr("value"), "size": tfStr("2c-4gb-40gb"), "os": tfStr("debian-12"),
+			"ssh_keys": tfStrList("2899"),
+		})
+
+		planned := h.plan("gigahost_server", prior, config)
+		if res := h.apply("gigahost_server", prior, planned.plannedValue, config); res.HasError() {
+			t.Fatalf("apply: %s", res.ErrorText())
+		}
+
+		if !strings.Contains(sent, `"ssh_keys":["2899"]`) {
+			t.Errorf("reinstall body = %s, want ssh_keys [2899]", sent)
 		}
 	})
 }

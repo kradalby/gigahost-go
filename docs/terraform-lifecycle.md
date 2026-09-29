@@ -124,7 +124,7 @@ into `gigahost_server`** after live verification, then renamed `os_id` → `os`
 in the slug overhaul (the attribute now takes `debian-12`-style slugs resolved
 against the live catalog at create/update time). Changing `os` between two
 OS slugs runs `POST /servers/{id}/reinstall` as an **in-place Update**: same
-server ID and IP, disk wiped, SSH keys not re-injected, root `password`
+server ID and IP, disk wiped, `ssh_keys` authorized again, root `password`
 rotated. Any transition involving `iso` or `rescue` (or clearing `os`)
 still replaces the server.
 
