@@ -22,9 +22,9 @@ func newServersReinstallCmd(c *Context, parent *ff.FlagSet, load func() error) *
 	)
 
 	fs.StringVar(&osRef, 0, "os", "", "operating system slug, codename, name, or ID (see `gigahost deploy os`)")
-	fs.StringVar(&language, 0, "language", "en_US", "OS language locale")
-	fs.StringVar(&keyboard, 0, "keyboard", "us", "keyboard layout")
-	fs.StringVar(&timezone, 0, "timezone", "Europe/Oslo", "timezone")
+	fs.StringVar(&language, 0, "language", gigahost.DefaultLanguage, "OS language locale")
+	fs.StringVar(&keyboard, 0, "keyboard", gigahost.DefaultKeyboard, "keyboard layout")
+	fs.StringVar(&timezone, 0, "timezone", gigahost.DefaultTimezone, "timezone")
 	fs.StringVar(&hostname, 0, "hostname", "", "new hostname (defaults to the current one)")
 
 	cmd := &ff.Command{

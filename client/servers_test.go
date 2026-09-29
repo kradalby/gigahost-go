@@ -260,6 +260,26 @@ func TestReinstallLifecycle(t *testing.T) {
 	}
 }
 
+// TestReinstallFillsRequiredLocale: language, keyboard and timezone are
+// required by the API. Sent empty, the Ubuntu installer gets timezone
+// {tz: None}, fails its schema check and halts with no OS installed.
+func TestReinstallFillsRequiredLocale(t *testing.T) {
+	t.Parallel()
+
+	srv, c := newServerAndClient(t)
+
+	srv.Expect("POST", "/servers/3523/reinstall").
+		WithJSON(`{"os_id":"72","language":"en_US","keyboard":"us","timezone":"Europe/Oslo","hostname":"srv3523.gigahost.no"}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK"},"reboot":true,"root_passwd":""}`)
+
+	if _, err := c.Reinstall.Reinstall(context.Background(), "3523", client.ReinstallRequest{
+		OSID:     "72",
+		Hostname: "srv3523.gigahost.no",
+	}); err != nil {
+		t.Fatalf("Reinstall: %v", err)
+	}
+}
+
 func TestIPMICreate(t *testing.T) {
 	t.Parallel()
 

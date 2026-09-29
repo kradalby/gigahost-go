@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -153,6 +154,14 @@ type ReinstallRequest struct {
 	Hostname string `json:"hostname"`
 }
 
+// Defaults Reinstall fills into the locale fields the API requires. Sent
+// empty, the Ubuntu installer gets timezone {tz: None} and halts.
+const (
+	DefaultLanguage = "en_US"
+	DefaultKeyboard = "us"
+	DefaultTimezone = "Europe/Oslo"
+)
+
 // ReinstallResult is returned after a successful reinstall initiation.
 // The fields sit at the top level of the API response rather than
 // inside `data`.
@@ -171,6 +180,10 @@ func (s *ReinstallService) Reinstall(ctx context.Context, serverID string, req R
 	if serverID == "" {
 		return nil, errors.New("gigahost: Reinstall: serverID is empty")
 	}
+
+	req.Language = cmp.Or(req.Language, DefaultLanguage)
+	req.Keyboard = cmp.Or(req.Keyboard, DefaultKeyboard)
+	req.Timezone = cmp.Or(req.Timezone, DefaultTimezone)
 
 	var raw []byte
 	if _, err := s.client.do(ctx, requestOptions{
