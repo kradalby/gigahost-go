@@ -2,6 +2,7 @@ package tfprovider_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -108,7 +109,8 @@ resource "gigahost_server" "test" {
 `, testAccProviderConfig(), sshName, pubKey, typeSlug, sizeSlug)
 }
 
-// accPickOSExcept returns an OS slug different from exclude.
+// accPickOSExcept returns the newest Debian other than exclude, for the same
+// reason as accPickOS.
 func accPickOSExcept(t *testing.T, c *gigahost.Client, exclude string) string {
 	t.Helper()
 
@@ -117,15 +119,19 @@ func accPickOSExcept(t *testing.T, c *gigahost.Client, exclude string) string {
 		t.Fatalf("accPickOSExcept: %v", err)
 	}
 
+	slug := ""
+
 	for _, o := range all {
-		if o.Slug != exclude {
-			return o.Slug
+		if o.Slug != exclude && strings.EqualFold(o.Distribution.Value, "debian") {
+			slug = o.Slug
 		}
 	}
 
-	t.Fatal("accPickOSExcept: no alternate OS found")
+	if slug == "" {
+		t.Fatal("accPickOSExcept: no alternate Debian found")
+	}
 
-	return ""
+	return slug
 }
 
 // testAccCheckServerOS verifies the live server runs the OS the slug

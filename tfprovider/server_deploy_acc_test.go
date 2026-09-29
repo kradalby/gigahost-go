@@ -270,26 +270,12 @@ func accCheapestTarget(t *testing.T, c *gigahost.Client) (string, string) {
 	return typeSlug, best.SizeSlug()
 }
 
-// accPickOS resolves an OS slug, preferring Debian.
+// accPickOS resolves the newest Debian: the catalog keeps end-of-life
+// releases whose installers no longer complete.
 func accPickOS(t *testing.T, c *gigahost.Client) string {
 	t.Helper()
 
-	all, err := c.Reinstall.ListAllOperatingSystems(accCtx)
-	if err != nil {
-		t.Fatalf("accPickOS: %v", err)
-	}
-
-	if len(all) == 0 {
-		t.Fatal("accPickOS: no operating systems")
-	}
-
-	for _, o := range all {
-		if strings.EqualFold(o.Distribution.Value, "debian") {
-			return o.Slug
-		}
-	}
-
-	return all[0].Slug
+	return accPickDistro(t, c, "debian")
 }
 
 // accPickDistro resolves the newest OS slug of one distribution, skipping the
