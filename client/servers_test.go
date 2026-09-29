@@ -280,6 +280,26 @@ func TestReinstallFillsRequiredLocale(t *testing.T) {
 	}
 }
 
+// TestReinstallSendsSSHKeys: reinstall accepts ssh_keys like deploy does
+// (undocumented). Without them the reinstalled OS has no authorized key.
+func TestReinstallSendsSSHKeys(t *testing.T) {
+	t.Parallel()
+
+	srv, c := newServerAndClient(t)
+
+	srv.Expect("POST", "/servers/3523/reinstall").
+		WithJSON(`{"os_id":"72","language":"en_US","keyboard":"us","timezone":"Europe/Oslo","hostname":"h","ssh_keys":["2899"]}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK"},"reboot":true,"root_passwd":""}`)
+
+	if _, err := c.Reinstall.Reinstall(context.Background(), "3523", client.ReinstallRequest{
+		OSID:     "72",
+		Hostname: "h",
+		SSHKeys:  []string{"2899"},
+	}); err != nil {
+		t.Fatalf("Reinstall: %v", err)
+	}
+}
+
 func TestIPMICreate(t *testing.T) {
 	t.Parallel()
 

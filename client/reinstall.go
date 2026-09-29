@@ -152,6 +152,9 @@ type ReinstallRequest struct {
 	Keyboard string `json:"keyboard"`
 	Timezone string `json:"timezone"`
 	Hostname string `json:"hostname"`
+	// SSHKeys are account key IDs to authorize, as on deploy. Undocumented
+	// for reinstall, but honoured; without them the new OS has no key.
+	SSHKeys []string `json:"ssh_keys,omitempty"`
 }
 
 // Defaults Reinstall fills into the locale fields the API requires. Sent
