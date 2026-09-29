@@ -1,6 +1,7 @@
 package testhelper
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -117,6 +118,9 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	// Restored so RespondWith callbacks can inspect what was sent.
+	r.Body = io.NopCloser(bytes.NewReader(body))
 
 	s.mu.Lock()
 
