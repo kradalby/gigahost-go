@@ -1331,7 +1331,7 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		// has rotated. It is returned exactly once, so record it before the
 		// wait — an error return below would otherwise discard it and leave
 		// state holding a password that no longer opens the machine.
-		plan.Password = types.StringValue(res.RootPasswd)
+		plan.Password = stringOrNull(res.RootPasswd)
 
 		if err := r.waitForInstall(ctx, state.ID.ValueString()); err != nil {
 			plan.nullUnknownRuntime()

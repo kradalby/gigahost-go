@@ -233,3 +233,37 @@ func TestServerReinstallRecordsRotatedPassword(t *testing.T) {
 		}
 	})
 }
+
+// TestServerReinstallWithoutPasswordIsNull: the live API answers reinstall
+// with an empty root_passwd. Storing "" reads as a known empty password;
+// null says the API gave none.
+func TestServerReinstallWithoutPasswordIsNull(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		objType := h.resourceObjectType("gigahost_server")
+
+		h.api.Route(http.MethodGet, "/reinstall/distro").Respond(http.StatusOK, distrosJSON)
+		h.api.Route(http.MethodGet, "/reinstall/distro/*").Respond(http.StatusOK, debianOSesJSON)
+		h.api.Route(http.MethodPost, "/servers/*").
+			Respond(http.StatusOK, `{"success":true,"reboot":true,"root_passwd":""}`)
+		h.api.Route(http.MethodGet, "/servers/*").Respond(http.StatusOK, serverJSON("18394", "101"))
+
+		prior := managedServerState(objType, "debian-11")
+		config := mkObject(objType, map[string]tftypes.Value{
+			"type": tfStr("value"), "size": tfStr("2c-4gb-40gb"), "os": tfStr("debian-12"),
+		})
+
+		planned := h.plan("gigahost_server", prior, config)
+		res := h.apply("gigahost_server", prior, planned.plannedValue, config)
+
+		if res.HasError() {
+			t.Fatalf("apply: %s", res.ErrorText())
+		}
+
+		if pw := res.State["password"]; !pw.IsNull() {
+			t.Errorf("password = %v, want null when the API returns none", pw)
+		}
+	})
+}
