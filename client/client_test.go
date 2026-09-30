@@ -148,6 +148,46 @@ func TestAuthenticateFlow(t *testing.T) {
 	}
 }
 
+// TestAuthenticateAsSomeoneElseLeavesClientAlone pins that logging in with
+// other credentials only returns their token. The client is shared; adopting
+// that token would switch every other caller to the other user.
+func TestAuthenticateAsSomeoneElseLeavesClientAlone(t *testing.T) {
+	t.Parallel()
+
+	srv := testhelper.NewServer(t)
+
+	srv.Expect(http.MethodPost, "/authenticate").
+		WithJSON(`{"username":"other@example.no","password":"x"}`).
+		Respond(http.StatusOK, `{"meta":{"status":200},"data":{"token":"other-token"}}`)
+	srv.Expect(http.MethodGet, "/dns/zones").
+		WithBearerToken("mine").
+		RespondFixture(t, "testdata/dns/list_zones.json")
+
+	c, err := client.NewClient(
+		client.WithBaseURL(srv.URL()),
+		client.WithHTTPClient(srv.Client()),
+		client.WithToken("mine"),
+	)
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+
+	ctx := context.Background()
+
+	tok, err := c.Auth.Authenticate(ctx, &client.AuthenticateRequest{Username: "other@example.no", Password: "x"})
+	if err != nil {
+		t.Fatalf("Authenticate: %v", err)
+	}
+
+	if tok.Token != "other-token" {
+		t.Errorf("Token = %q, want the other user's", tok.Token)
+	}
+
+	if _, err := c.DNS.ListZones(ctx); err != nil {
+		t.Fatalf("ListZones: %v", err)
+	}
+}
+
 func TestErrorResponseIsMappedToAPIError(t *testing.T) {
 	t.Parallel()
 
