@@ -25,11 +25,12 @@ func lockZone(zoneID string) func() {
 
 // serverLocks serializes mutating operations against a single server.
 //
-// Ordering an additional IPv4 (gigahost_server_ipv4) cannot learn the new IP's
-// id from the order response, so Create identifies it by diffing the server's
-// IP list before and after. Two concurrent orders on the same server would race
-// that diff; serializing per-server keeps the before/after stable while still
-// allowing parallelism across different servers.
+// Ordering an additional IPv4 (gigahost_server_ipv4) and taking a snapshot
+// (gigahost_server_snapshot) cannot learn the new object's id from the
+// response, so Create identifies it by diffing the server's list before and
+// after. Two concurrent creates on the same server would race that diff;
+// serializing per-server keeps the before/after stable while still allowing
+// parallelism across different servers.
 var serverLocks sync.Map // serverID -> *sync.Mutex
 
 // lockServer acquires the lock for a server and returns the unlock function:

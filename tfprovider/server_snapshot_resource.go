@@ -102,7 +102,11 @@ func (r *serverSnapshotResource) Configure(_ context.Context, req resource.Confi
 	r.client = client
 }
 
-// Create takes the snapshot and waits for it to appear.
+// Create takes the snapshot and adopts it. The API returns no ID, so Create
+// identifies the snapshot by diffing the server's snapshot IDs before and
+// after, serialized per server so concurrent creates do not race the diff.
+// Matching by name alone would adopt an existing namesake, and a later
+// destroy would delete it.
 func (r *serverSnapshotResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan serverSnapshotResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -114,16 +118,26 @@ func (r *serverSnapshotResource) Create(ctx context.Context, req resource.Create
 	serverID := plan.ServerID.ValueString()
 	name := plan.Name.ValueString()
 
+	defer lockServer(serverID)()
+
+	existing, err := r.client.Snapshots.List(ctx, serverID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to list snapshots before creating",
+			fmt.Sprintf("server %s: %v", serverID, err))
+
+		return
+	}
+
 	if err := r.client.Snapshots.Create(ctx, serverID, name); err != nil {
 		resp.Diagnostics.AddError("Failed to create snapshot", err.Error())
 
 		return
 	}
 
-	snap := r.waitForSnapshot(ctx, serverID, name)
-	if snap == nil {
-		resp.Diagnostics.AddError("Snapshot did not appear",
-			fmt.Sprintf("the snapshot %q was not listed on server %s within %s", name, serverID, snapshotAppearTimeout))
+	snap, err := r.waitForSnapshot(ctx, serverID, name, snapshotIDSet(existing))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to identify the new snapshot",
+			fmt.Sprintf("%v. The snapshot may exist; import it with `terraform import` once identified.", err))
 
 		return
 	}
@@ -133,9 +147,11 @@ func (r *serverSnapshotResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-// waitForSnapshot polls the snapshot list until one with the given display name
-// appears, returning it (or nil on timeout).
-func (r *serverSnapshotResource) waitForSnapshot(ctx context.Context, serverID, name string) *gigahost.Snapshot {
+// waitForSnapshot polls the snapshot list until a snapshot absent from before
+// appears with the given display name.
+func (r *serverSnapshotResource) waitForSnapshot(
+	ctx context.Context, serverID, name string, before map[int64]bool,
+) (*gigahost.Snapshot, error) {
 	ctx, cancel := context.WithTimeout(ctx, snapshotAppearTimeout)
 	defer cancel()
 
@@ -145,19 +161,52 @@ func (r *serverSnapshotResource) waitForSnapshot(ctx context.Context, serverID, 
 	for {
 		snaps, err := r.client.Snapshots.List(ctx, serverID)
 		if err == nil {
-			for i := range snaps {
-				if snaps[i].DisplayName == name {
-					return &snaps[i]
-				}
+			snap, err := newSnapshot(before, snaps, name)
+			if err != nil || snap != nil {
+				return snap, err
 			}
 		}
 
 		select {
 		case <-ctx.Done():
-			return nil
+			return nil, fmt.Errorf("snapshot %q was not listed on server %s within %s",
+				name, serverID, snapshotAppearTimeout)
 		case <-ticker.C:
 		}
 	}
+}
+
+// snapshotIDSet returns the set of snapshot IDs in a list.
+func snapshotIDSet(snaps []gigahost.Snapshot) map[int64]bool {
+	set := make(map[int64]bool, len(snaps))
+	for i := range snaps {
+		set[snaps[i].ID] = true
+	}
+
+	return set
+}
+
+// newSnapshot returns the snapshot named name whose ID is not in before, or
+// nil when none has appeared yet. Several such snapshots is an error: one was
+// made outside this provider, and either could be ours.
+func newSnapshot(before map[int64]bool, snaps []gigahost.Snapshot, name string) (*gigahost.Snapshot, error) {
+	var found *gigahost.Snapshot
+
+	for i := range snaps {
+		snap := &snaps[i]
+		if before[snap.ID] || snap.DisplayName != name {
+			continue
+		}
+
+		if found != nil {
+			return nil, fmt.Errorf("ambiguous: snapshots %d and %d both appeared named %q",
+				found.ID, snap.ID, name)
+		}
+
+		found = snap
+	}
+
+	return found, nil
 }
 
 // setSnapshot fills the model from an API snapshot.
