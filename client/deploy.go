@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"slices"
 	"strings"
 )
 
@@ -218,6 +219,27 @@ func (c *DeployCatalog) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// clone returns a deep copy of the catalog.
+func (c *DeployCatalog) clone() *DeployCatalog {
+	out := &DeployCatalog{
+		Tiers:    slices.Clone(c.Tiers),
+		Regions:  slices.Clone(c.Regions),
+		Currency: c.Currency,
+	}
+
+	for i := range out.Tiers {
+		products := slices.Clone(out.Tiers[i].Products)
+		for j := range products {
+			products[j].Specs.Disks = slices.Clone(products[j].Specs.Disks)
+			products[j].RegionIDs = slices.Clone(products[j].RegionIDs)
+		}
+
+		out.Tiers[i].Products = products
+	}
+
+	return out
+}
+
 // DeployServerRequest is the body for POST /deploy/servers.
 // Exactly one of OSID, ISOID, or Rescue must be set.
 // At least one of ProductID or ProductHash must be set.
@@ -413,7 +435,7 @@ func (i *DeployISO) UnmarshalJSON(data []byte) error {
 }
 
 // GetCatalog returns the full cloud server catalog including tiers,
-// products, regions, and currency.
+// products, regions, and currency. The result is the caller's own copy.
 func (s *DeployService) GetCatalog(ctx context.Context) (*DeployCatalog, error) {
 	return s.catalog.get(func() (*DeployCatalog, error) {
 		var out DeployCatalog
@@ -426,7 +448,7 @@ func (s *DeployService) GetCatalog(ctx context.Context) (*DeployCatalog, error) 
 		}
 
 		return &out, nil
-	})
+	}, (*DeployCatalog).clone)
 }
 
 // Deploy creates one or more hourly-billed servers. Exactly one of

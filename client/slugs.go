@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -583,7 +584,8 @@ type ResolvedOS struct {
 }
 
 // ListAllOperatingSystems fans out over all distributions and returns
-// every installable OS with its derived slug.
+// every installable OS with its derived slug. The result is the caller's own
+// copy.
 func (s *ReinstallService) ListAllOperatingSystems(ctx context.Context) ([]ResolvedOS, error) {
 	return s.allOSes.get(func() ([]ResolvedOS, error) {
 		dists, err := s.ListDistributions(ctx)
@@ -605,7 +607,7 @@ func (s *ReinstallService) ListAllOperatingSystems(ctx context.Context) ([]Resol
 		}
 
 		return out, nil
-	})
+	}, slices.Clone)
 }
 
 // ResolveOS resolves user input to one installable OS. Accepted forms:
