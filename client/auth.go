@@ -54,22 +54,22 @@ type AuthenticateRequest struct {
 	Code int `json:"code,omitzero"`
 }
 
-// Authenticate calls POST /authenticate and returns a new [Token]. When
-// req is nil, the credentials configured on the client (via
-// [WithCredentials]) are used.
+// Authenticate calls POST /authenticate and returns a new [Token].
 //
-// On success the token is also stored on the client for subsequent
-// authenticated requests.
+// When req is nil, the credentials configured on the client (via
+// [WithCredentials]) are used, and the client adopts the token for
+// subsequent requests. Other credentials only yield their token: the client
+// is shared, and adopting it would switch every other caller to that user.
 func (s *AuthService) Authenticate(ctx context.Context, req *AuthenticateRequest) (*Token, error) {
-	if req == nil {
-		if s.client.credentials == nil {
-			return nil, errors.New("gigahost: Authenticate: no credentials provided and none configured on client")
-		}
-
-		req = new(s.client.credentials.request())
+	if req != nil {
+		return s.login(ctx, *req)
 	}
 
-	tok, err := s.login(ctx, *req)
+	if s.client.credentials == nil {
+		return nil, errors.New("gigahost: Authenticate: no credentials provided and none configured on client")
+	}
+
+	tok, err := s.login(ctx, s.client.credentials.request())
 	if err != nil {
 		return nil, err
 	}
