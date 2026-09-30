@@ -203,7 +203,7 @@ Backed by `SnapshotsService.Create` (async, returns no ID) / `List` / `Delete`.
 | `snapshot_id`                         | int, computed                     | Hydrated by post-create `List` poll (the API does **not** return it on create). |
 | `display_name`, `state`, `created_at` | computed                          | From the `Snapshot` record.                                                     |
 
-- **Create:** call `Create(serverID, name)`, then poll `List` to find the new snapshot by name and capture its `snap_id`. Block until `State == completed` (bounded timeout) so downstream dependencies are safe. Capture creation start time to disambiguate same-named snapshots if needed (confirm name uniqueness).
+- **Create:** under `lockServer`, record existing `snap_id`s, call `Create(serverID, name)`, then poll `List` for the one new ID with that display name; several is an error. Matching by name alone would adopt an existing namesake, and destroy would delete it. Block until `State == completed` (bounded timeout) so downstream dependencies are safe.
 - **Read:** `List` and match by `snapshot_id`; remove from state if absent.
 - **Update:** none — every input is `RequiresReplace`.
 - **Delete:** `Delete(serverID, snapshotID)`.
@@ -280,12 +280,12 @@ These open questions block specific design points. Each is tagged with the decis
 **Snapshot (gates `gigahost_server_snapshot`):**
 
 - Confirm `POST /snapshot` returns no `snap_id` (requires post-create `List` poll).
-- Are snapshot names unique per server? (Determines whether name-match in the poll is safe, or we must disambiguate by `snap_time`.)
+- Are snapshot names unique per server? (Moot for correctness: Create diffs IDs rather than trusting the name.)
 - Typical create-to-`completed` time? (Sizes the Create polling timeout.)
 - Do snapshots survive `POST /servers/{id}/cancel`, or are they deleted with the server?
 - Confirm **no restore endpoint** exists (if it does, restore is a separate imperative action, not part of this resource).
 - Can a `completed` snapshot be deleted immediately, and while another is pending?
-- Does `StatusSnapshot` enforce one-operation-at-a-time per server? (May require a per-server lock like `locks.go`.)
+- Does `StatusSnapshot` enforce one-operation-at-a-time per server? (Create takes `serverLocks` for its ID diff either way.)
 
 **Extra IPv4 (gates `gigahost_server_ipv4`):**
 
