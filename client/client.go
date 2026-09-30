@@ -25,12 +25,13 @@ type Client struct {
 	userAgent  string
 	debugLog   func(string, ...any)
 
-	// Authentication state. Exactly one of token or credentials is set
-	// after NewClient returns (or the constructor errors). When
-	// credentials are set, tokenMu guards token against races between
-	// concurrent refresh attempts.
+	// Authentication state. At least one of token or credentials is set
+	// after NewClient returns. With credentials, token is a cache that
+	// ensureToken fills and discardToken empties; tokenMu guards it and
+	// refresh, the login in flight.
 	tokenMu     sync.Mutex
 	token       string
+	refresh     *tokenRefresh
 	credentials *credentials
 
 	// Auth exposes the /authenticate endpoint and manages the
@@ -78,6 +79,10 @@ type credentials struct {
 	username string
 	password string
 	code     int
+}
+
+func (c *credentials) request() AuthenticateRequest {
+	return AuthenticateRequest{Username: c.username, Password: c.password, Code: c.code}
 }
 
 // NewClient constructs a client. At least one of [WithToken] or
@@ -185,29 +190,16 @@ func (c *Client) do(ctx context.Context, opts requestOptions) (*Meta, error) {
 		return nil, errors.New("gigahost: request: method is empty")
 	}
 
-	req, err := c.buildRequest(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.roundTrip(req, opts)
+	resp, tok, err := c.send(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
 
 	// Auto-refresh on 401 when credentials are set. We retry once.
-	if resp.statusCode == http.StatusUnauthorized && c.credentials != nil && !opts.skipAuth {
-		c.tokenMu.Lock()
-		// Invalidate the current token so refresh is forced.
-		c.token = ""
-		c.tokenMu.Unlock()
+	if resp.statusCode == http.StatusUnauthorized && c.credentials != nil && tok != "" {
+		c.discardToken(tok)
 
-		req2, err := c.buildRequest(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err = c.roundTrip(req2, opts)
+		resp, _, err = c.send(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -233,7 +225,34 @@ type responseSummary struct {
 	body       []byte
 }
 
-func (c *Client) buildRequest(ctx context.Context, opts requestOptions) (*http.Request, error) {
+// send makes one round trip and reports the bearer token it used, empty when
+// the request carried none.
+func (c *Client) send(ctx context.Context, opts requestOptions) (*responseSummary, string, error) {
+	var tok string
+
+	if opts.basic == nil && !opts.skipAuth {
+		var err error
+
+		tok, err = c.ensureToken(ctx)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
+	req, err := c.buildRequest(ctx, opts, tok)
+	if err != nil {
+		return nil, "", err
+	}
+
+	resp, err := c.roundTrip(req, opts)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return resp, tok, nil
+}
+
+func (c *Client) buildRequest(ctx context.Context, opts requestOptions, bearer string) (*http.Request, error) {
 	u, err := c.url(opts.path, opts.query)
 	if err != nil {
 		return nil, err
@@ -269,13 +288,8 @@ func (c *Client) buildRequest(ctx context.Context, opts requestOptions) (*http.R
 	switch {
 	case opts.basic != nil:
 		req.SetBasicAuth(opts.basic.username, opts.basic.password)
-	case !opts.skipAuth:
-		tok, err := c.bearerToken(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("Authorization", "Bearer "+tok)
+	case bearer != "":
+		req.Header.Set("Authorization", "Bearer "+bearer)
 	}
 
 	c.logRequest(req, rawBody)
@@ -345,13 +359,6 @@ func (c *Client) decodeBody(body []byte, opts requestOptions) (*Meta, error) {
 	}
 
 	return &meta, nil
-}
-
-// bearerToken returns the current bearer token, delegating to the
-// authentication service to fetch a fresh one if the client was built
-// with [WithCredentials] and no token is currently cached.
-func (c *Client) bearerToken(ctx context.Context) (string, error) {
-	return c.ensureToken(ctx)
 }
 
 func (c *Client) url(path string, query url.Values) (string, error) {

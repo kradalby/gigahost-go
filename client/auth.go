@@ -66,13 +66,23 @@ func (s *AuthService) Authenticate(ctx context.Context, req *AuthenticateRequest
 			return nil, errors.New("gigahost: Authenticate: no credentials provided and none configured on client")
 		}
 
-		req = &AuthenticateRequest{
-			Username: s.client.credentials.username,
-			Password: s.client.credentials.password,
-			Code:     s.client.credentials.code,
-		}
+		req = new(s.client.credentials.request())
 	}
 
+	tok, err := s.login(ctx, *req)
+	if err != nil {
+		return nil, err
+	}
+
+	s.client.tokenMu.Lock()
+	s.client.token = tok.Token
+	s.client.tokenMu.Unlock()
+
+	return tok, nil
+}
+
+// login exchanges credentials for a token without touching client state.
+func (s *AuthService) login(ctx context.Context, req AuthenticateRequest) (*Token, error) {
 	if req.Username == "" || req.Password == "" {
 		return nil, errors.New("gigahost: Authenticate: username and password are required")
 	}
@@ -93,36 +103,90 @@ func (s *AuthService) Authenticate(ctx context.Context, req *AuthenticateRequest
 		return nil, errors.New("gigahost: Authenticate: API returned empty token")
 	}
 
-	s.client.tokenMu.Lock()
-	s.client.token = tok.Token
-	s.client.tokenMu.Unlock()
-
 	return &tok, nil
 }
 
-// ensureToken returns a valid bearer token, calling Authenticate on
-// demand when credentials are configured but no token has been fetched
-// yet. It is used internally by the request pipeline.
+// tokenRefresh is one in-flight /authenticate that parallel callers share.
+type tokenRefresh struct {
+	done  chan struct{}
+	token string
+	err   error
+	// abandoned marks a login whose own caller gave up; its error says
+	// nothing about the credentials, so waiters try again.
+	abandoned bool
+}
+
+// ensureToken returns the bearer token, logging in first when the client
+// has credentials but no token.
+//
+// Parallel callers share one login rather than each making their own: that
+// is one request instead of ten under Terraform, and if the API keeps one
+// session per user, every extra login would revoke the token another caller
+// was just handed.
 func (c *Client) ensureToken(ctx context.Context) (string, error) {
+	for {
+		c.tokenMu.Lock()
+
+		if tok := c.token; tok != "" {
+			c.tokenMu.Unlock()
+
+			return tok, nil
+		}
+
+		if c.credentials == nil {
+			c.tokenMu.Unlock()
+
+			return "", errors.New("gigahost: no token available and no credentials configured")
+		}
+
+		if r := c.refresh; r != nil {
+			c.tokenMu.Unlock()
+
+			select {
+			case <-ctx.Done():
+				return "", ctx.Err()
+			case <-r.done:
+			}
+
+			if r.abandoned {
+				continue
+			}
+
+			return r.token, r.err
+		}
+
+		r := &tokenRefresh{done: make(chan struct{})}
+		c.refresh = r
+		c.tokenMu.Unlock()
+
+		tok, err := c.Auth.login(ctx, c.credentials.request())
+
+		c.tokenMu.Lock()
+		c.refresh = nil
+
+		if err != nil {
+			r.err = fmt.Errorf("gigahost: auto-authenticate: %w", err)
+			r.abandoned = ctx.Err() != nil
+		} else {
+			r.token = tok.Token
+			c.token = tok.Token
+		}
+
+		c.tokenMu.Unlock()
+		close(r.done)
+
+		return r.token, r.err
+	}
+}
+
+// discardToken forgets tok after the API refused it. A parallel caller may
+// already have replaced it; clearing that fresh token would force a second
+// login for nothing.
+func (c *Client) discardToken(tok string) {
 	c.tokenMu.Lock()
-	tok := c.token
-	c.tokenMu.Unlock()
+	defer c.tokenMu.Unlock()
 
-	if tok != "" {
-		return tok, nil
+	if c.token == tok {
+		c.token = ""
 	}
-
-	if c.credentials == nil {
-		return "", errors.New("gigahost: no token available and no credentials configured")
-	}
-
-	if _, err := c.Auth.Authenticate(ctx, nil); err != nil {
-		return "", fmt.Errorf("gigahost: auto-authenticate: %w", err)
-	}
-
-	c.tokenMu.Lock()
-	tok = c.token
-	c.tokenMu.Unlock()
-
-	return tok, nil
 }
