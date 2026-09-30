@@ -8,7 +8,8 @@ import "sync"
 // error" (and similar) when record create/update/delete calls for the same
 // zone arrive concurrently — as they do during a parallel `terraform apply` or
 // `destroy`. Serializing per-zone in the provider process avoids the race while
-// still allowing parallelism across different zones.
+// still allowing parallelism across different zones. Redirect writes take it
+// too: they mutate the same zone.
 var zoneLocks sync.Map // zoneID -> *sync.Mutex
 
 // lockZone acquires the lock for a zone and returns the unlock function:

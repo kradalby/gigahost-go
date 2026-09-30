@@ -98,6 +98,8 @@ func (r *dnsRedirectResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	defer lockZone(plan.ZoneID.ValueString())()
+
 	if err := r.client.DNS.CreateRedirect(ctx, plan.ZoneID.ValueString(), gigahost.CreateRedirectRequest{
 		Source:    plan.Source.ValueString(),
 		TargetURL: plan.TargetURL.ValueString(),
@@ -153,6 +155,8 @@ func (r *dnsRedirectResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	defer lockZone(state.ZoneID.ValueString())()
+
 	if err := r.client.DNS.UpdateRedirect(
 		ctx,
 		state.ZoneID.ValueString(),
@@ -178,6 +182,8 @@ func (r *dnsRedirectResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	defer lockZone(state.ZoneID.ValueString())()
 
 	if err := r.client.DNS.DeleteRedirect(ctx, state.ZoneID.ValueString(), state.Source.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Failed to delete redirect", err.Error())
