@@ -2,7 +2,9 @@ package client_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"reflect"
 	"sync"
 	"testing"
 	"testing/synctest"
@@ -119,6 +121,97 @@ func TestOperatingSystemListIsFetchedOnce(t *testing.T) {
 	if got := perDistro.Calls(); got != perDistroFirst {
 		t.Errorf("per-distribution lists refetched: %d calls, want the first fetch's %d",
 			got, perDistroFirst)
+	}
+}
+
+// TestCachedValuesAreNotShared pins that every caller gets its own copy. The
+// cache is shared by every resource in an apply, so one caller editing what it
+// was handed must not change what the next one reads — nor race with it.
+func TestCachedValuesAreNotShared(t *testing.T) {
+	t.Parallel()
+
+	srv := testhelper.NewServer(t)
+
+	srv.Route(http.MethodGet, "/deploy/servers").RespondFixture(t, "testdata/deploy/catalog.json")
+	srv.Route(http.MethodGet, "/reinstall/distro").RespondFixture(t, "testdata/reinstall/distros.json")
+	srv.Route(http.MethodGet, "/reinstall/distro/*").RespondFixture(t, "testdata/reinstall/distro_debian.json")
+
+	c, err := client.NewClient(client.WithBaseURL(srv.URL()), client.WithHTTPClient(srv.Client()), client.WithToken("t"))
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+
+	ctx := context.Background()
+
+	for _, get := range []struct {
+		name string
+		fn   func() (any, error)
+	}{
+		{"GetCatalog", func() (any, error) { return c.Deploy.GetCatalog(ctx) }},
+		{"ListAllOperatingSystems", func() (any, error) { return c.Reinstall.ListAllOperatingSystems(ctx) }},
+	} {
+		first, err := get.fn()
+		if err != nil {
+			t.Fatalf("%s: %v", get.name, err)
+		}
+
+		second, err := get.fn()
+		if err != nil {
+			t.Fatalf("%s: %v", get.name, err)
+		}
+
+		assertDisjoint(t, get.name, reflect.ValueOf(first), reflect.ValueOf(second))
+	}
+}
+
+// assertDisjoint fails when a and b share memory a write could go through.
+// It walks the types rather than naming fields, so a field added later is
+// covered without touching the test.
+func assertDisjoint(t *testing.T, path string, a, b reflect.Value) {
+	t.Helper()
+
+	switch a.Kind() {
+	case reflect.Pointer:
+		if a.IsNil() || b.IsNil() {
+			return
+		}
+
+		if a.Pointer() == b.Pointer() {
+			t.Errorf("%s: both callers hold the same pointer", path)
+
+			return
+		}
+
+		assertDisjoint(t, path, a.Elem(), b.Elem())
+	case reflect.Slice:
+		if a.Len() == 0 || b.Len() == 0 {
+			return
+		}
+
+		if a.Pointer() == b.Pointer() {
+			t.Errorf("%s: both callers hold the same backing array", path)
+
+			return
+		}
+
+		for i := range min(a.Len(), b.Len()) {
+			assertDisjoint(t, fmt.Sprintf("%s[%d]", path, i), a.Index(i), b.Index(i))
+		}
+	case reflect.Map:
+		if a.Len() == 0 || b.Len() == 0 {
+			return
+		}
+
+		if a.Pointer() == b.Pointer() {
+			t.Errorf("%s: both callers hold the same map", path)
+		}
+	case reflect.Struct:
+		for i := range a.NumField() {
+			if f := a.Type().Field(i); f.IsExported() {
+				assertDisjoint(t, path+"."+f.Name, a.Field(i), b.Field(i))
+			}
+		}
+	default:
 	}
 }
 

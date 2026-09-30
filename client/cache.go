@@ -22,6 +22,9 @@ const referenceTTL = time.Minute
 // Deliberately not used for anything the account owns. Records, zones and
 // servers change during an apply, and serving those from a cache would make
 // create-then-look-up fail.
+//
+// The stored value is never handed out: every caller gets its own copy, so
+// one caller editing its result cannot change what the others read.
 type cached[T any] struct {
 	mu      sync.Mutex
 	value   T
@@ -29,17 +32,18 @@ type cached[T any] struct {
 	ok      bool
 }
 
-// get returns the memoised value, calling fetch when it is absent or stale.
+// get returns a copy of the memoised value, made by clone, calling fetch when
+// it is absent or stale.
 //
 // The lock is held across fetch so a burst of parallel resources makes one
 // request rather than all of them missing together. That serialises the first
 // caller's peers for the length of one request, which is the point.
-func (c *cached[T]) get(fetch func() (T, error)) (T, error) {
+func (c *cached[T]) get(fetch func() (T, error), clone func(T) T) (T, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if c.ok && time.Now().Before(c.expires) {
-		return c.value, nil
+		return clone(c.value), nil
 	}
 
 	value, err := fetch()
@@ -53,5 +57,5 @@ func (c *cached[T]) get(fetch func() (T, error)) (T, error) {
 	c.expires = time.Now().Add(referenceTTL)
 	c.ok = true
 
-	return value, nil
+	return clone(value), nil
 }
