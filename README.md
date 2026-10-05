@@ -233,7 +233,17 @@ $ prek run --all-files
 This module is untagged. The provider ships from
 [kradalby/terraform-provider-gigahost](https://github.com/kradalby/terraform-provider-gigahost),
 which pins a commit of this module, regenerates its docs from the schema here,
-and carries the version tags; see its README.
+and carries the version tags. Release through that shim:
+
+```console
+$ cd ../terraform-provider-gigahost
+$ nix run .#bump -- vX.Y.Z     # pins this repo by commit, regenerates docs, tags
+$ git push origin main vX.Y.Z  # goreleaser releases; registries ingest
+```
+
+**This repo carries no tags.** The shim pins it by commit, so its go.mod records
+a pseudo-version; a tag here would resolve back to that version instead and
+break the pin. `bump` refuses to release against a tagged commit.
 
 ## Project design
 
