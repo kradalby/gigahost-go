@@ -62,6 +62,11 @@ func TestResultFromStatus(t *testing.T) {
 		got.password != "hunter2" {
 		t.Fatalf("resultFromStatus = %+v", got)
 	}
+
+	e.ServerID = "0"
+	if got := resultFromStatus(e); got.serverID != "" {
+		t.Fatal("queued order's zero sentinel was treated as a server ID")
+	}
 }
 
 func TestServerIsReady(t *testing.T) {

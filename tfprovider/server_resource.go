@@ -810,6 +810,10 @@ func statusIsFailure(s gigahost.DeployProvisionStatus) bool {
 
 // resultFromStatus projects a status entry into a deployResult.
 func resultFromStatus(e gigahost.DeployServerStatus) deployResult {
+	if e.ServerID == "0" {
+		e.ServerID = "" // Queued orders have no server yet.
+	}
+
 	return deployResult{
 		serverID: e.ServerID,
 		ip:       e.IP,
@@ -855,8 +859,20 @@ func (r *serverResource) waitForServer(ctx context.Context, orderID string, time
 			if entry := statusForOrder(st, orderID); entry != nil {
 				statusMisses = 0
 				goneChecks = 0
+
 				res := resultFromStatus(*entry)
+				if last != nil {
+					res.password = cmp.Or(res.password, last.password)
+				}
+
 				last = &res
+				// The API exposes the root password only on the server record
+				// during installation. Capture it before that field disappears.
+				if last.serverID != "" {
+					if srv, err := r.client.Servers.Get(ctx, last.serverID); err == nil {
+						mergeServerIntoResult(last, srv)
+					}
+				}
 
 				if st.AllReady || terminalReadyStatuses[entry.Status] {
 					return last, nil
@@ -876,9 +892,9 @@ func (r *serverResource) waitForServer(ctx context.Context, orderID string, time
 					case gerr == nil:
 						goneChecks = 0
 
-						if serverIsReady(srv) {
-							mergeServerIntoResult(last, srv)
+						mergeServerIntoResult(last, srv)
 
+						if serverIsReady(srv) {
 							return last, nil
 						}
 					case gigahost.IsNotFound(gerr):
@@ -904,6 +920,10 @@ func (r *serverResource) waitForServer(ctx context.Context, orderID string, time
 func mergeServerIntoResult(res *deployResult, srv *gigahost.Server) {
 	if srv == nil {
 		return
+	}
+
+	if srv.InstallDetails != nil {
+		res.password = cmp.Or(srv.InstallDetails.RootPassword, res.password)
 	}
 
 	if srv.PrimaryIP != "" {

@@ -107,6 +107,46 @@ func TestWaitForServer_HappyPath(t *testing.T) {
 	})
 }
 
+func TestWaitForServerRetainsInstallPassword(t *testing.T) {
+	for _, terminal := range []string{"ready", "missing", "failed"} {
+		t.Run(terminal, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				var reads atomic.Int64
+
+				api := &fakeAPI{
+					statusFn: func(n int64) (string, int) {
+						if n < 3 {
+							return statusEnvelope("7", "s7", "installing", false), 200
+						}
+
+						if terminal == "missing" {
+							return emptyStatusEnvelope(), 200
+						}
+
+						return statusEnvelope("7", "s7", terminal, terminal == "ready"), 200
+					},
+					serverFn: func(id string) (string, int) {
+						if reads.Add(1) == 1 {
+							return `{"data":[{"srv_id":"s7","srv_status_install":true,"install_details":{"root_password":"test-root-password"}}]}`, 200
+						}
+
+						return serverEnvelope(id, false, true), 200
+					},
+				}
+
+				res, err := testResource(api.server(t)).waitForServer(context.Background(), "7", deployReadyTimeout)
+				if (err != nil) != (terminal == "failed") {
+					t.Fatalf("unexpected completion error: %v", err)
+				}
+
+				if res == nil || res.password != "test-root-password" {
+					t.Fatal("install-time password was not retained")
+				}
+			})
+		})
+	}
+}
+
 func TestWaitForServer_ListFallbackCompletes(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		// Status reports the server id once, then drops the order; the durable
