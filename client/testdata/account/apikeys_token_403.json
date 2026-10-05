@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "status": 403,
+    "status_message": "403 Forbidden",
+    "maintenance": false,
+    "time": 1790600630,
+    "message": "You do not have permission for this operation."
+  },
+  "data": []
+}

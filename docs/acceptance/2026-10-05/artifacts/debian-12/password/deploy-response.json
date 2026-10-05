@@ -1,0 +1,2050 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK",
+    "maintenance": false,
+    "time": 1791197228,
+    "message": "200 OK"
+  },
+  "data": {
+    "tiers": [
+      {
+        "group_name": "GPU Instances",
+        "in_stock": true,
+        "quantity": 3,
+        "products": [
+          {
+            "vm_cores": "",
+            "price_id": 4330,
+            "dc_ids": [
+              9
+            ],
+            "dc_stock": {
+              "9": true
+            },
+            "product_id": 8058,
+            "product_name": "GPU-1 VPS RTX6000 24GB",
+            "vm_bw_type": "",
+            "quantity": 2,
+            "built_to_order": false,
+            "discount_year": 0,
+            "config_addons": [],
+            "vm_memory": "",
+            "vm_storage": "",
+            "waitlist_eligible": false,
+            "addons": [
+              {
+                "name": "vCPU",
+                "value": "AMD EPYC 7542 8 vCPU"
+              },
+              {
+                "name": "RAM",
+                "value": "24GB RAM"
+              },
+              {
+                "name": "Storage",
+                "value": "300GB NVMe SSD"
+              },
+              {
+                "value": "20TB @ 10G",
+                "name": "Network"
+              },
+              {
+                "name": "GPU",
+                "value": "RTX 6000 24GB"
+              }
+            ],
+            "in_stock": true,
+            "allow_recurring": true,
+            "setup": 0,
+            "auction_id": 0,
+            "region_ids": [
+              1
+            ],
+            "product_hash": "1cca5033e7",
+            "contract": 1,
+            "monthly_extra": 0,
+            "vm_bw": "",
+            "specs": {
+              "uplink_gbps": 10,
+              "cpu_cores": 8,
+              "cpu_sockets": 1,
+              "cpu_model": "AMD EPYC 7542 8 vCPU",
+              "disks": [
+                {
+                  "size_gb": 300,
+                  "type": "SSD"
+                }
+              ],
+              "gpus": [
+                {
+                  "manufacturer": "NVIDIA",
+                  "model": "RTX 6000",
+                  "vram_gb": 24,
+                  "count": 1
+                }
+              ],
+              "bw": 20000,
+              "ram_gb": 24,
+              "bw_type": "quota"
+            },
+            "type": "dedicated",
+            "allow_hourly": true,
+            "rate_hourly": 2.85903,
+            "rate_monthly": 1790
+          },
+          {
+            "discount_year": 0,
+            "contract": 1,
+            "region_ids": [
+              1
+            ],
+            "allow_hourly": true,
+            "product_id": 8059,
+            "quantity": 1,
+            "waitlist_eligible": false,
+            "rate_monthly": 2990,
+            "dc_stock": {
+              "9": true
+            },
+            "allow_recurring": true,
+            "setup": 0,
+            "vm_memory": "",
+            "vm_storage": "",
+            "vm_bw": "",
+            "dc_ids": [
+              9
+            ],
+            "product_name": "GPU-2 VPS RTX6000 24GB",
+            "in_stock": true,
+            "auction_id": 0,
+            "price_id": 4333,
+            "monthly_extra": 0,
+            "product_hash": "5b70ebf078",
+            "specs": {
+              "cpu_cores": 8,
+              "cpu_sockets": 1,
+              "cpu_model": "AMD EPYC 7542 8 vCPU",
+              "ram_gb": 24,
+              "disks": [
+                {
+                  "size_gb": 300,
+                  "type": "SSD"
+                }
+              ],
+              "gpus": [
+                {
+                  "vram_gb": 24,
+                  "count": 2,
+                  "manufacturer": "NVIDIA",
+                  "model": "RTX 6000"
+                }
+              ],
+              "bw": 20000,
+              "uplink_gbps": 10,
+              "bw_type": "quota"
+            },
+            "addons": [
+              {
+                "value": "AMD EPYC 7542 8 vCPU",
+                "name": "vCPU"
+              },
+              {
+                "name": "RAM",
+                "value": "24GB RAM"
+              },
+              {
+                "name": "Storage",
+                "value": "300GB NVMe SSD"
+              },
+              {
+                "name": "Network",
+                "value": "20TB @ 10G"
+              },
+              {
+                "name": "GPU",
+                "value": "2xRTX 6000 24GB"
+              }
+            ],
+            "vm_cores": "",
+            "vm_bw_type": "",
+            "rate_hourly": 4.77569,
+            "type": "dedicated",
+            "built_to_order": false,
+            "config_addons": []
+          }
+        ],
+        "group_id": 62
+      },
+      {
+        "group_id": 58,
+        "group_name": "KVM Value",
+        "in_stock": true,
+        "quantity": 0,
+        "products": [
+          {
+            "monthly_extra": 0,
+            "vm_bw": "20000",
+            "rate_hourly": 0.09424,
+            "product_name": "KVM Value VPS 4GB",
+            "type": "vm",
+            "waitlist_eligible": false,
+            "auction_id": 0,
+            "specs": {
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 4,
+              "disks": [
+                {
+                  "size_gb": 40,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 2
+            },
+            "built_to_order": false,
+            "allow_hourly": true,
+            "rate_monthly": 59,
+            "discount_year": 15,
+            "config_addons": [],
+            "vm_storage": "40",
+            "vm_bw_type": "quota",
+            "product_id": 7955,
+            "quantity": 0,
+            "addons": [],
+            "vm_memory": "4",
+            "price_id": 4249,
+            "dc_stock": {
+              "8": true,
+              "9": true
+            },
+            "product_hash": "97b462a4d6",
+            "allow_recurring": true,
+            "setup": 0,
+            "contract": 1,
+            "vm_cores": "2",
+            "region_ids": [
+              1
+            ],
+            "dc_ids": [
+              8,
+              9
+            ],
+            "in_stock": true
+          },
+          {
+            "monthly_extra": 0,
+            "product_id": 7956,
+            "product_name": "KVM Value VPS 8GB",
+            "config_addons": [],
+            "allow_hourly": true,
+            "discount_year": 15,
+            "addons": [],
+            "vm_cores": "4",
+            "vm_bw": "20000",
+            "type": "vm",
+            "quantity": 0,
+            "vm_bw_type": "quota",
+            "dc_stock": {
+              "8": true,
+              "9": true
+            },
+            "product_hash": "cc013d070d",
+            "setup": 0,
+            "region_ids": [
+              1
+            ],
+            "in_stock": true,
+            "auction_id": 0,
+            "vm_memory": "8",
+            "vm_storage": "80",
+            "dc_ids": [
+              8,
+              9
+            ],
+            "waitlist_eligible": false,
+            "allow_recurring": true,
+            "specs": {
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 8,
+              "disks": [
+                {
+                  "size_gb": 80,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 4
+            },
+            "rate_hourly": 0.15813,
+            "built_to_order": false,
+            "contract": 1,
+            "price_id": 4336,
+            "rate_monthly": 99
+          },
+          {
+            "auction_id": 0,
+            "vm_storage": "120",
+            "vm_bw_type": "quota",
+            "rate_hourly": 0.2859,
+            "vm_memory": "16",
+            "dc_ids": [
+              8,
+              9
+            ],
+            "in_stock": true,
+            "allow_recurring": true,
+            "rate_monthly": 179,
+            "monthly_extra": 0,
+            "dc_stock": {
+              "9": true,
+              "8": true
+            },
+            "addons": [],
+            "waitlist_eligible": false,
+            "setup": 0,
+            "config_addons": [],
+            "vm_bw": "20000",
+            "region_ids": [
+              1
+            ],
+            "quantity": 0,
+            "built_to_order": false,
+            "allow_hourly": true,
+            "vm_cores": "8",
+            "specs": {
+              "cpu_model": null,
+              "ram_gb": 16,
+              "disks": [
+                {
+                  "size_gb": 120,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 8,
+              "cpu_sockets": 1
+            },
+            "price_id": 4339,
+            "product_id": 7957,
+            "product_hash": "dca7a1eca8",
+            "product_name": "KVM Value VPS 16GB",
+            "type": "vm",
+            "contract": 1,
+            "discount_year": 15
+          },
+          {
+            "allow_recurring": true,
+            "contract": 1,
+            "addons": [],
+            "auction_id": 0,
+            "rate_hourly": 0.47757,
+            "built_to_order": false,
+            "specs": {
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 16,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 32,
+              "disks": [
+                {
+                  "size_gb": 160,
+                  "type": "NVMe"
+                }
+              ]
+            },
+            "product_hash": "441da369fb",
+            "product_name": "KVM Value VPS 32GB",
+            "type": "vm",
+            "setup": 0,
+            "monthly_extra": 0,
+            "product_id": 7958,
+            "config_addons": [],
+            "dc_stock": {
+              "8": true,
+              "9": true
+            },
+            "quantity": 0,
+            "vm_storage": "160",
+            "price_id": 4345,
+            "in_stock": true,
+            "waitlist_eligible": false,
+            "vm_cores": "16",
+            "vm_bw_type": "quota",
+            "rate_monthly": 299,
+            "dc_ids": [
+              8,
+              9
+            ],
+            "vm_bw": "20000",
+            "region_ids": [
+              1
+            ],
+            "allow_hourly": true,
+            "discount_year": 15,
+            "vm_memory": "32"
+          }
+        ]
+      },
+      {
+        "products": [
+          {
+            "product_id": 7951,
+            "vm_cores": "2",
+            "price_id": 4234,
+            "allow_hourly": true,
+            "monthly_extra": 0,
+            "config_addons": [],
+            "vm_storage": "40",
+            "allow_recurring": true,
+            "contract": 1,
+            "vm_bw": "20000",
+            "vm_bw_type": "quota",
+            "type": "vm",
+            "waitlist_eligible": false,
+            "setup": 0,
+            "product_name": "KVM Performance VPS 4GB",
+            "auction_id": 0,
+            "vm_memory": "4",
+            "rate_hourly": 0.19007,
+            "rate_monthly": 119,
+            "region_ids": [
+              1
+            ],
+            "dc_ids": [
+              2,
+              9
+            ],
+            "dc_stock": {
+              "2": true,
+              "9": true
+            },
+            "product_hash": "f9544dd3cb",
+            "quantity": 0,
+            "in_stock": true,
+            "built_to_order": false,
+            "discount_year": 15,
+            "addons": [],
+            "specs": {
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 2,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 4,
+              "disks": [
+                {
+                  "size_gb": 40,
+                  "type": "NVMe"
+                }
+              ]
+            }
+          },
+          {
+            "monthly_extra": 0,
+            "vm_bw": "20000",
+            "dc_ids": [
+              2,
+              9
+            ],
+            "dc_stock": {
+              "2": true,
+              "9": true
+            },
+            "type": "vm",
+            "specs": {
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 4,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 8,
+              "disks": [
+                {
+                  "size_gb": 80,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000
+            },
+            "rate_monthly": 189,
+            "product_id": 7952,
+            "in_stock": true,
+            "contract": 1,
+            "vm_storage": "80",
+            "quantity": 0,
+            "waitlist_eligible": false,
+            "vm_cores": "4",
+            "product_hash": "d58b68d08e",
+            "setup": 0,
+            "vm_memory": "8",
+            "vm_bw_type": "quota",
+            "rate_hourly": 0.30188,
+            "region_ids": [
+              1
+            ],
+            "allow_hourly": true,
+            "auction_id": 0,
+            "price_id": 4228,
+            "product_name": "KVM Performance VPS 8GB",
+            "discount_year": 15,
+            "addons": [],
+            "config_addons": [],
+            "built_to_order": false,
+            "allow_recurring": true
+          },
+          {
+            "built_to_order": false,
+            "rate_hourly": 0.5734,
+            "region_ids": [
+              1
+            ],
+            "dc_stock": {
+              "2": true,
+              "9": true
+            },
+            "price_id": 4225,
+            "rate_monthly": 359,
+            "dc_ids": [
+              2,
+              9
+            ],
+            "product_hash": "50f4751e13",
+            "type": "vm",
+            "config_addons": [],
+            "vm_cores": "8",
+            "vm_storage": "120",
+            "waitlist_eligible": false,
+            "discount_year": 15,
+            "addons": [],
+            "auction_id": 0,
+            "vm_bw": "20000",
+            "allow_recurring": true,
+            "contract": 1,
+            "specs": {
+              "uplink_gbps": null,
+              "cpu_cores": 8,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 16,
+              "disks": [
+                {
+                  "size_gb": 120,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000,
+              "bw_type": "quota"
+            },
+            "product_id": 7953,
+            "in_stock": true,
+            "quantity": 0,
+            "vm_bw_type": "quota",
+            "allow_hourly": true,
+            "setup": 0,
+            "product_name": "KVM Performance VPS 16GB",
+            "vm_memory": "16",
+            "monthly_extra": 0
+          },
+          {
+            "monthly_extra": 0,
+            "type": "vm",
+            "addons": [],
+            "price_id": 4216,
+            "quantity": 0,
+            "contract": 1,
+            "specs": {
+              "disks": [
+                {
+                  "size_gb": 160,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 20000,
+              "bw_type": "quota",
+              "uplink_gbps": null,
+              "cpu_cores": 16,
+              "cpu_sockets": 1,
+              "cpu_model": null,
+              "ram_gb": 32
+            },
+            "region_ids": [
+              1
+            ],
+            "dc_stock": {
+              "2": true,
+              "9": true
+            },
+            "in_stock": true,
+            "config_addons": [],
+            "rate_monthly": 599,
+            "product_name": "KVM Performance VPS 32GB",
+            "allow_hourly": true,
+            "auction_id": 0,
+            "vm_cores": "16",
+            "discount_year": 15,
+            "vm_storage": "160",
+            "vm_bw": "20000",
+            "dc_ids": [
+              2,
+              9
+            ],
+            "product_id": 7954,
+            "product_hash": "0b5c134960",
+            "built_to_order": false,
+            "waitlist_eligible": false,
+            "allow_recurring": true,
+            "setup": 0,
+            "vm_memory": "32",
+            "vm_bw_type": "quota",
+            "rate_hourly": 0.95674
+          }
+        ],
+        "group_id": 57,
+        "group_name": "KVM Performance",
+        "in_stock": true,
+        "quantity": 0
+      },
+      {
+        "group_id": 61,
+        "group_name": "Elite",
+        "in_stock": true,
+        "quantity": 0,
+        "products": [
+          {
+            "discount_year": 15,
+            "setup": 7999,
+            "vm_bw": "",
+            "price_id": 3973,
+            "vm_cores": "",
+            "vm_storage": "",
+            "vm_bw_type": "",
+            "specs": {
+              "uplink_gbps": null,
+              "cpu_model": null,
+              "ram_gb": 0,
+              "gpus": [],
+              "bw_type": "",
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "disks": [],
+              "bw": 0
+            },
+            "rate_hourly": 4.79007,
+            "product_hash": "f1f0a5b2b5",
+            "in_stock": false,
+            "monthly_extra": 0,
+            "auction_id": 0,
+            "dc_stock": {},
+            "built_to_order": true,
+            "vm_memory": "",
+            "region_ids": [
+              1
+            ],
+            "product_name": "Elite - AMD EPYC 7313P 256GB",
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD EPYC 7313P"
+              },
+              {
+                "name": "Minne",
+                "value": "256GB DDR4 ECC/REG"
+              },
+              {
+                "name": "Lagring",
+                "value": "2 x 1TB NVMe SSD"
+              },
+              {
+                "value": "50TB",
+                "name": "B\u00e5ndbredde"
+              },
+              {
+                "name": "Port",
+                "value": "10G"
+              }
+            ],
+            "type": "dedicated",
+            "waitlist_eligible": false,
+            "contract": 1,
+            "config_addons": [
+              {
+                "addon_name": "B\u00e5ndbredde",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "is_default": true,
+                    "opt_id": 290,
+                    "opt_value": "50TB",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 0
+                  },
+                  {
+                    "rate_monthly": 750,
+                    "is_default": false,
+                    "opt_id": 10025,
+                    "opt_value": "1Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0
+                  },
+                  {
+                    "opt_id": 10026,
+                    "opt_value": "2Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 1500,
+                    "is_default": false
+                  },
+                  {
+                    "rate_monthly": 2250,
+                    "is_default": false,
+                    "opt_id": 10027,
+                    "opt_value": "3Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0
+                  },
+                  {
+                    "opt_id": 10028,
+                    "opt_value": "4Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3000,
+                    "is_default": false
+                  },
+                  {
+                    "opt_value": "5Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3750,
+                    "is_default": false,
+                    "opt_id": 10029
+                  },
+                  {
+                    "opt_value": "6Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 4500,
+                    "is_default": false,
+                    "opt_id": 10030
+                  },
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 5250,
+                    "is_default": false,
+                    "opt_id": 10031,
+                    "opt_value": "7Gbps",
+                    "opt_setup": 0
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6000,
+                    "is_default": false,
+                    "opt_id": 10032,
+                    "opt_value": "8Gbps"
+                  },
+                  {
+                    "opt_id": 10033,
+                    "opt_value": "9Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6750,
+                    "is_default": false
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 7500,
+                    "is_default": false,
+                    "opt_id": 10034,
+                    "opt_value": "10Gbps"
+                  }
+                ],
+                "addon_id": 2332
+              }
+            ],
+            "rate_monthly": 2999,
+            "dc_ids": [],
+            "quantity": 0,
+            "allow_hourly": false,
+            "product_id": 4886,
+            "allow_recurring": true
+          },
+          {
+            "quantity": 0,
+            "contract": 1,
+            "vm_bw": "",
+            "product_name": "Elite - AMD EPYC 7543P 256GB",
+            "vm_memory": "",
+            "vm_storage": "",
+            "setup": 7999,
+            "auction_id": 0,
+            "in_stock": false,
+            "vm_cores": "",
+            "rate_monthly": 3999,
+            "region_ids": [
+              1
+            ],
+            "built_to_order": true,
+            "allow_recurring": true,
+            "specs": {
+              "cpu_sockets": 1,
+              "cpu_model": "AMD EPYC 7543P 32-core",
+              "ram_gb": 256,
+              "disks": [
+                {
+                  "size_gb": 960,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 960,
+                  "type": "NVMe"
+                }
+              ],
+              "gpus": [],
+              "bw_type": "quota",
+              "bw": 50000,
+              "uplink_gbps": 10,
+              "cpu_cores": 0
+            },
+            "product_id": 4887,
+            "product_hash": "3a5ef07033",
+            "monthly_extra": 0,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD EPYC 7543P"
+              },
+              {
+                "name": "Minne",
+                "value": "256GB DDR4 ECC/REG"
+              },
+              {
+                "name": "Lagring",
+                "value": "2 x 1TB NVMe SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "50TB"
+              },
+              {
+                "name": "Port",
+                "value": "10G"
+              }
+            ],
+            "config_addons": [
+              {
+                "addon_id": 2337,
+                "addon_name": "B\u00e5ndbredde",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "is_default": true,
+                    "opt_id": 305,
+                    "opt_value": "50TB",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 0
+                  },
+                  {
+                    "opt_value": "1Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 750,
+                    "is_default": false,
+                    "opt_id": 10035
+                  },
+                  {
+                    "opt_id": 10036,
+                    "opt_value": "2Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 1500,
+                    "is_default": false
+                  },
+                  {
+                    "rate_monthly": 2250,
+                    "is_default": false,
+                    "opt_id": 10037,
+                    "opt_value": "3Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0
+                  },
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 3000,
+                    "is_default": false,
+                    "opt_id": 10038,
+                    "opt_value": "4Gbps",
+                    "opt_setup": 0
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10039,
+                    "opt_value": "5Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3750
+                  },
+                  {
+                    "opt_id": 10040,
+                    "opt_value": "6Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 4500,
+                    "is_default": false
+                  },
+                  {
+                    "opt_value": "7Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 5250,
+                    "is_default": false,
+                    "opt_id": 10041
+                  },
+                  {
+                    "opt_id": 10042,
+                    "opt_value": "8Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6000,
+                    "is_default": false
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10043,
+                    "opt_value": "9Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6750
+                  },
+                  {
+                    "opt_id": 10044,
+                    "opt_value": "10Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 7500,
+                    "is_default": false
+                  }
+                ]
+              }
+            ],
+            "type": "dedicated",
+            "allow_hourly": false,
+            "price_id": 3964,
+            "dc_ids": [
+              8,
+              9
+            ],
+            "dc_stock": {
+              "9": false,
+              "8": false
+            },
+            "waitlist_eligible": false,
+            "discount_year": 15,
+            "vm_bw_type": "",
+            "rate_hourly": 6.38729
+          },
+          {
+            "monthly_extra": 0,
+            "type": "dedicated",
+            "discount_year": 15,
+            "dc_ids": [
+              8
+            ],
+            "contract": 1,
+            "vm_memory": "",
+            "price_id": 3961,
+            "rate_hourly": 7.98451,
+            "setup": 7999,
+            "in_stock": false,
+            "vm_storage": "",
+            "vm_bw": "",
+            "region_ids": [
+              1
+            ],
+            "config_addons": [
+              {
+                "addon_id": 2342,
+                "addon_name": "B\u00e5ndbredde",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "is_default": true,
+                    "opt_id": 320,
+                    "opt_value": "50TB",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 0
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 750,
+                    "is_default": false,
+                    "opt_id": 10045,
+                    "opt_value": "1Gbps"
+                  },
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 1500,
+                    "is_default": false,
+                    "opt_id": 10046,
+                    "opt_value": "2Gbps",
+                    "opt_setup": 0
+                  },
+                  {
+                    "opt_id": 10047,
+                    "opt_value": "3Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 2250,
+                    "is_default": false
+                  },
+                  {
+                    "opt_id": 10048,
+                    "opt_value": "4Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3000,
+                    "is_default": false
+                  },
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 3750,
+                    "is_default": false,
+                    "opt_id": 10049,
+                    "opt_value": "5Gbps",
+                    "opt_setup": 0
+                  },
+                  {
+                    "rate_monthly": 4500,
+                    "is_default": false,
+                    "opt_id": 10050,
+                    "opt_value": "6Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 5250,
+                    "is_default": false,
+                    "opt_id": 10051,
+                    "opt_value": "7Gbps"
+                  },
+                  {
+                    "opt_value": "8Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6000,
+                    "is_default": false,
+                    "opt_id": 10052
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10053,
+                    "opt_value": "9Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6750
+                  },
+                  {
+                    "opt_value": "10Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 7500,
+                    "is_default": false,
+                    "opt_id": 10054
+                  }
+                ]
+              }
+            ],
+            "rate_monthly": 4999,
+            "product_id": 4888,
+            "product_name": "Elite - AMD EPYC 7713P 512GB",
+            "allow_recurring": true,
+            "auction_id": 0,
+            "vm_bw_type": "",
+            "vm_cores": "",
+            "dc_stock": {
+              "8": false
+            },
+            "product_hash": "5bb8658ff2",
+            "built_to_order": true,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD EPYC 7713P"
+              },
+              {
+                "name": "Minne",
+                "value": "512GB DDR4 ECC/REG"
+              },
+              {
+                "name": "Lagring",
+                "value": "2 x 1TB NVMe SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "50TB"
+              },
+              {
+                "name": "Port",
+                "value": "10G"
+              }
+            ],
+            "specs": {
+              "cpu_model": "EPYC 7713P 64-Core 2.0GHz",
+              "disks": [
+                {
+                  "size_gb": 1000,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 1000,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 3840,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 3840,
+                  "type": "NVMe"
+                }
+              ],
+              "uplink_gbps": 10,
+              "cpu_sockets": 1,
+              "ram_gb": 512,
+              "gpus": [],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "cpu_cores": 0
+            },
+            "quantity": -1,
+            "waitlist_eligible": false,
+            "allow_hourly": false
+          }
+        ]
+      },
+      {
+        "in_stock": true,
+        "quantity": 0,
+        "products": [
+          {
+            "product_hash": "5703b246ff",
+            "built_to_order": true,
+            "allow_recurring": true,
+            "setup": 1999,
+            "allow_hourly": false,
+            "discount_year": 15,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD Ryzen 7600"
+              },
+              {
+                "name": "Minne",
+                "value": "32GB DDR5"
+              },
+              {
+                "name": "Lagring",
+                "value": "2 x 500GB NVMe SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "1G: Unmetered - 10G: 50TB"
+              },
+              {
+                "name": "Port",
+                "value": "1G"
+              }
+            ],
+            "config_addons": [
+              {
+                "addon_id": 2301,
+                "addon_name": "Minne",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true,
+                    "opt_id": 30,
+                    "opt_value": "32GB DDR5",
+                    "opt_setup": 0
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 600,
+                    "is_default": false,
+                    "opt_id": 10057,
+                    "opt_value": "64GB DDR5"
+                  },
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 1600,
+                    "is_default": false,
+                    "opt_id": 10058,
+                    "opt_value": "128GB DDR5",
+                    "opt_setup": 0
+                  }
+                ]
+              },
+              {
+                "addon_id": 2303,
+                "addon_name": "B\u00e5ndbredde",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true,
+                    "opt_id": 32,
+                    "opt_value": "1G: Unmetered - 10G: 50TB",
+                    "opt_setup": 0
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10076,
+                    "opt_value": "1Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 750
+                  },
+                  {
+                    "opt_id": 10077,
+                    "opt_value": "2Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 1500,
+                    "is_default": false
+                  },
+                  {
+                    "opt_value": "3Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 2250,
+                    "is_default": false,
+                    "opt_id": 10078
+                  },
+                  {
+                    "opt_id": 10079,
+                    "opt_value": "4Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3000,
+                    "is_default": false
+                  },
+                  {
+                    "opt_id": 10080,
+                    "opt_value": "5Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3750,
+                    "is_default": false
+                  },
+                  {
+                    "opt_id": 10081,
+                    "opt_value": "6Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 4500,
+                    "is_default": false
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10082,
+                    "opt_value": "7Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 5250
+                  },
+                  {
+                    "rate_monthly": 6000,
+                    "is_default": false,
+                    "opt_id": 10083,
+                    "opt_value": "8Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0
+                  },
+                  {
+                    "opt_id": 10084,
+                    "opt_value": "9Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6750,
+                    "is_default": false
+                  },
+                  {
+                    "opt_value": "10Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 7500,
+                    "is_default": false,
+                    "opt_id": 10085
+                  }
+                ]
+              },
+              {
+                "addon_name": "Port",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "opt_id": 33,
+                    "opt_value": "1G",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10075,
+                    "opt_value": "10G",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 250
+                  }
+                ],
+                "addon_id": 2304
+              }
+            ],
+            "vm_storage": "",
+            "dc_stock": {
+              "8": false,
+              "9": false,
+              "2": false
+            },
+            "type": "dedicated",
+            "quantity": 0,
+            "waitlist_eligible": false,
+            "contract": 1,
+            "auction_id": 0,
+            "vm_bw": "",
+            "vm_cores": "",
+            "rate_hourly": 1.27618,
+            "rate_monthly": 799,
+            "product_id": 4880,
+            "product_name": "Pro - AMD Ryzen 7600 32GB",
+            "monthly_extra": 0,
+            "vm_memory": "",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "disks": [
+                {
+                  "size_gb": 500,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 500,
+                  "type": "NVMe"
+                },
+                {
+                  "size_gb": 8000,
+                  "type": "HDD"
+                },
+                {
+                  "size_gb": 8000,
+                  "type": "HDD"
+                }
+              ],
+              "gpus": [],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "cpu_model": "AMD Ryzen 5 7600 3.6 GHz",
+              "ram_gb": 32,
+              "uplink_gbps": 10
+            },
+            "region_ids": [
+              1
+            ],
+            "dc_ids": [
+              2,
+              8,
+              9
+            ],
+            "in_stock": false,
+            "price_id": 4003
+          },
+          {
+            "monthly_extra": 0,
+            "auction_id": 0,
+            "vm_bw_type": "",
+            "specs": {
+              "bw": 1000,
+              "bw_type": "quota",
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "disks": [
+                {
+                  "size_gb": 500,
+                  "type": "NVMe"
+                },
+                {
+                  "type": "NVMe",
+                  "size_gb": 500
+                }
+              ],
+              "gpus": [],
+              "uplink_gbps": 10,
+              "cpu_model": "AMD Ryzen 9 9950X3D 5.7 Ghz",
+              "ram_gb": 64
+            },
+            "rate_hourly": 2.39424,
+            "rate_monthly": 1499,
+            "dc_ids": [
+              1,
+              2,
+              8,
+              9
+            ],
+            "waitlist_eligible": false,
+            "allow_hourly": false,
+            "vm_cores": "",
+            "in_stock": false,
+            "quantity": -1,
+            "dc_stock": {
+              "1": false,
+              "2": false,
+              "8": false,
+              "9": false
+            },
+            "product_id": 7919,
+            "setup": 2999,
+            "vm_memory": "",
+            "vm_storage": "",
+            "region_ids": [
+              1
+            ],
+            "contract": 1,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD Ryzen 9950X3D"
+              },
+              {
+                "name": "Minne",
+                "value": "64GB DDR5"
+              },
+              {
+                "name": "Lagring",
+                "value": "2 x 500GB NVMe SSD"
+              },
+              {
+                "value": "1G: Unmetered - 10G: 50TB",
+                "name": "B\u00e5ndbredde"
+              },
+              {
+                "name": "Port",
+                "value": "1G"
+              }
+            ],
+            "config_addons": [
+              {
+                "options": [
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true,
+                    "opt_id": 212,
+                    "opt_value": "64GB DDR5",
+                    "opt_setup": 0
+                  },
+                  {
+                    "opt_id": 10060,
+                    "opt_value": "128GB DDR5",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 900,
+                    "is_default": false
+                  }
+                ],
+                "addon_id": 2471,
+                "addon_name": "Minne",
+                "addon_type": "radio"
+              },
+              {
+                "addon_id": 2473,
+                "addon_name": "B\u00e5ndbredde",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "opt_value": "1G: Unmetered - 10G: 50TB",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true,
+                    "opt_id": 10064
+                  },
+                  {
+                    "opt_id": 10065,
+                    "opt_value": "1Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 750,
+                    "is_default": false
+                  },
+                  {
+                    "opt_id": 10066,
+                    "opt_value": "2Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 1500,
+                    "is_default": false
+                  },
+                  {
+                    "opt_id": 10067,
+                    "opt_value": "3Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 2250,
+                    "is_default": false
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3000,
+                    "is_default": false,
+                    "opt_id": 10068,
+                    "opt_value": "4Gbps"
+                  },
+                  {
+                    "opt_value": "5Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 3750,
+                    "is_default": false,
+                    "opt_id": 10069
+                  },
+                  {
+                    "opt_value": "6Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 4500,
+                    "is_default": false,
+                    "opt_id": 10070
+                  },
+                  {
+                    "opt_value": "7Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 5250,
+                    "is_default": false,
+                    "opt_id": 10071
+                  },
+                  {
+                    "opt_value": "8Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6000,
+                    "is_default": false,
+                    "opt_id": 10072
+                  },
+                  {
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 6750,
+                    "is_default": false,
+                    "opt_id": 10073,
+                    "opt_value": "9Gbps"
+                  },
+                  {
+                    "opt_id": 10074,
+                    "opt_value": "10Gbps",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 7500,
+                    "is_default": false
+                  }
+                ]
+              },
+              {
+                "addon_id": 2474,
+                "addon_name": "Port",
+                "addon_type": "radio",
+                "options": [
+                  {
+                    "price_id": 0,
+                    "rate_monthly": 0,
+                    "is_default": true,
+                    "opt_id": 10062,
+                    "opt_value": "1G",
+                    "opt_setup": 0
+                  },
+                  {
+                    "is_default": false,
+                    "opt_id": 10063,
+                    "opt_value": "10G",
+                    "opt_setup": 0,
+                    "price_id": 0,
+                    "rate_monthly": 250
+                  }
+                ]
+              }
+            ],
+            "price_id": 3994,
+            "product_hash": "ee87adc3a8",
+            "allow_recurring": true,
+            "discount_year": 15,
+            "vm_bw": "",
+            "product_name": "Pro - AMD Ryzen 9950X3D 64GB",
+            "type": "dedicated",
+            "built_to_order": true
+          }
+        ],
+        "group_id": 60,
+        "group_name": "Pro"
+      },
+      {
+        "group_id": 59,
+        "group_name": "Intro",
+        "in_stock": true,
+        "quantity": 10,
+        "products": [
+          {
+            "product_name": "Intro - Intel Core i3 4GB",
+            "monthly_extra": 0,
+            "rate_hourly": 0.31785,
+            "product_id": 4873,
+            "built_to_order": false,
+            "allow_hourly": true,
+            "vm_memory": "",
+            "rate_monthly": 199,
+            "price_id": 3397,
+            "region_ids": [
+              1
+            ],
+            "dc_ids": [
+              1,
+              2
+            ],
+            "dc_stock": {
+              "1": false,
+              "2": false
+            },
+            "in_stock": false,
+            "allow_recurring": true,
+            "setup": 0,
+            "config_addons": [],
+            "vm_storage": "",
+            "product_hash": "74b46228c0",
+            "waitlist_eligible": true,
+            "discount_year": 15,
+            "vm_bw": "",
+            "specs": {
+              "gpus": [],
+              "bw": 1000,
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i5-2400 3.1GHz",
+              "ram_gb": 16,
+              "bw_type": "cdr",
+              "uplink_gbps": 1,
+              "disks": [
+                {
+                  "type": "HDD",
+                  "size_gb": 500
+                }
+              ]
+            },
+            "type": "dedicated",
+            "quantity": 0,
+            "contract": 1,
+            "auction_id": 0,
+            "vm_cores": "",
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "Intel Core i3"
+              },
+              {
+                "name": "Minne",
+                "value": "4GB DDR3 RAM"
+              },
+              {
+                "name": "Harddisk",
+                "value": "250GB SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "50TB @ 1Gbps"
+              }
+            ],
+            "vm_bw_type": ""
+          },
+          {
+            "type": "dedicated",
+            "built_to_order": false,
+            "waitlist_eligible": false,
+            "price_id": 3406,
+            "dc_stock": {
+              "2": true
+            },
+            "product_name": "Intro - Intel Core i5 16GB",
+            "setup": 0,
+            "vm_bw": "",
+            "product_hash": "0da0758f1f",
+            "in_stock": true,
+            "rate_monthly": 349,
+            "allow_recurring": true,
+            "vm_memory": "",
+            "vm_bw_type": "",
+            "specs": {
+              "cpu_sockets": 1,
+              "cpu_model": "Intel Core i5-2500 3.3GHz",
+              "disks": [
+                {
+                  "size_gb": 500,
+                  "type": "SSD"
+                }
+              ],
+              "gpus": [],
+              "bw_type": "cdr",
+              "uplink_gbps": 1,
+              "cpu_cores": 0,
+              "ram_gb": 8,
+              "bw": 1000
+            },
+            "quantity": 1,
+            "discount_year": 15,
+            "monthly_extra": 0,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "Intel Core i5"
+              },
+              {
+                "name": "Minne",
+                "value": "16GB DDR3"
+              },
+              {
+                "name": "Harddisk",
+                "value": "500GB SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "Fri bruk @ 1 Gbps"
+              }
+            ],
+            "config_addons": [],
+            "allow_hourly": true,
+            "vm_storage": "",
+            "rate_hourly": 0.55743,
+            "contract": 1,
+            "dc_ids": [
+              2
+            ],
+            "product_id": 4876,
+            "auction_id": 0,
+            "vm_cores": "",
+            "region_ids": [
+              1
+            ]
+          },
+          {
+            "type": "dedicated",
+            "built_to_order": false,
+            "discount_year": 15,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "Intel Core i7"
+              },
+              {
+                "name": "Minne",
+                "value": "16GB DDR3"
+              },
+              {
+                "name": "Harddisk",
+                "value": "500GB SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "Fri bruk @ 1 Gbps"
+              }
+            ],
+            "monthly_extra": 0,
+            "vm_memory": "",
+            "in_stock": false,
+            "waitlist_eligible": true,
+            "allow_hourly": true,
+            "config_addons": [],
+            "dc_stock": {
+              "1": false,
+              "2": false
+            },
+            "quantity": 0,
+            "setup": 0,
+            "auction_id": 0,
+            "vm_storage": "",
+            "vm_bw_type": "",
+            "price_id": 3412,
+            "dc_ids": [
+              1,
+              2
+            ],
+            "region_ids": [
+              1
+            ],
+            "product_id": 4877,
+            "product_hash": "2dc14c0f6c",
+            "specs": {
+              "cpu_cores": 0,
+              "cpu_sockets": 1,
+              "disks": [
+                {
+                  "size_gb": 500,
+                  "type": "SSD"
+                }
+              ],
+              "gpus": [],
+              "bw_type": "cdr",
+              "cpu_model": "Intel Xeon E3-1240v2 3.4GHz",
+              "ram_gb": 32,
+              "bw": 1000,
+              "uplink_gbps": 1
+            },
+            "rate_hourly": 0.63729,
+            "contract": 1,
+            "vm_cores": "",
+            "vm_bw": "",
+            "product_name": "Intro - Intel Core i7 16GB",
+            "allow_recurring": true,
+            "rate_monthly": 399
+          },
+          {
+            "product_hash": "59ef69346c",
+            "quantity": 9,
+            "discount_year": 15,
+            "price_id": 4150,
+            "dc_stock": {
+              "2": false,
+              "8": false,
+              "9": true,
+              "1": false
+            },
+            "product_name": "Intro - AMD Ryzen 3600 32GB",
+            "auction_id": 0,
+            "vm_memory": "",
+            "vm_bw_type": "",
+            "allow_recurring": true,
+            "monthly_extra": 0,
+            "vm_storage": "",
+            "vm_cores": "",
+            "region_ids": [
+              1
+            ],
+            "dc_ids": [
+              1,
+              2,
+              8,
+              9
+            ],
+            "waitlist_eligible": false,
+            "allow_hourly": true,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD Ryzen 3600"
+              },
+              {
+                "name": "Minne",
+                "value": "32GB DDR4"
+              },
+              {
+                "name": "Lagring",
+                "value": "500GB NVMe SSD"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "Fri bruk @ 1 Gbps"
+              }
+            ],
+            "config_addons": [],
+            "specs": {
+              "cpu_sockets": 1,
+              "gpus": [],
+              "uplink_gbps": 1,
+              "cpu_model": "  AMD Ryzen 5 3600 3.6GHz",
+              "ram_gb": 32,
+              "disks": [
+                {
+                  "type": "NVMe",
+                  "size_gb": 500
+                }
+              ],
+              "bw": 1000,
+              "bw_type": "cdr",
+              "cpu_cores": 0
+            },
+            "rate_monthly": 599,
+            "product_id": 4878,
+            "in_stock": true,
+            "built_to_order": false,
+            "vm_bw": "",
+            "type": "dedicated",
+            "setup": 0,
+            "contract": 1,
+            "rate_hourly": 0.95674
+          },
+          {
+            "contract": 1,
+            "vm_memory": "",
+            "specs": {
+              "cpu_sockets": 1,
+              "cpu_model": "AMD Ryzen 5 3600 3.6GHz",
+              "ram_gb": 64,
+              "disks": [
+                {
+                  "size_gb": 500,
+                  "type": "NVMe"
+                }
+              ],
+              "bw": 1000,
+              "cpu_cores": 0,
+              "gpus": [],
+              "bw_type": "cdr",
+              "uplink_gbps": 1
+            },
+            "rate_hourly": 1.11646,
+            "dc_ids": [
+              2,
+              8,
+              9
+            ],
+            "dc_stock": {
+              "2": false,
+              "8": false,
+              "9": false
+            },
+            "in_stock": false,
+            "addons": [
+              {
+                "name": "Prosessor",
+                "value": "AMD Ryzen 3600"
+              },
+              {
+                "name": "Minne",
+                "value": "64GB DDR4"
+              },
+              {
+                "value": "500GB NVMe SSD",
+                "name": "Lagring"
+              },
+              {
+                "name": "B\u00e5ndbredde",
+                "value": "Fri bruk @ 1 Gbps"
+              }
+            ],
+            "rate_monthly": 699,
+            "discount_year": 15,
+            "vm_storage": "",
+            "price_id": 4153,
+            "product_hash": "3b1b0db6fa",
+            "allow_hourly": true,
+            "allow_recurring": true,
+            "setup": 0,
+            "monthly_extra": 0,
+            "config_addons": [],
+            "auction_id": 0,
+            "vm_cores": "",
+            "vm_bw_type": "",
+            "type": "dedicated",
+            "waitlist_eligible": false,
+            "product_name": "Intro - AMD Ryzen 3600 64GB",
+            "quantity": 0,
+            "built_to_order": true,
+            "vm_bw": "",
+            "region_ids": [
+              1
+            ],
+            "product_id": 4879
+          }
+        ]
+      }
+    ],
+    "regions": [
+      {
+        "region_name_short": "SFJ, NO",
+        "region_country": "Norge",
+        "region_icon": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+        "region_active": "1",
+        "region_id": "1",
+        "region_name": "Sandefjord"
+      }
+    ],
+    "datacenters": [
+      {
+        "dc_name": "DC1",
+        "region_id": 1,
+        "region_name": "Sandefjord",
+        "region_name_short": "SFJ, NO",
+        "region_location": "Sandefjord",
+        "region_country": "Norge",
+        "region_icon": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+        "dc_id": 1
+      },
+      {
+        "region_icon": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+        "dc_id": 2,
+        "dc_name": "DC2",
+        "region_id": 1,
+        "region_name": "Sandefjord",
+        "region_name_short": "SFJ, NO",
+        "region_location": "Sandefjord",
+        "region_country": "Norge"
+      },
+      {
+        "region_name": "Sandefjord",
+        "region_name_short": "SFJ, NO",
+        "region_location": "Sandefjord",
+        "region_country": "Norge",
+        "region_icon": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+        "dc_id": 8,
+        "dc_name": "DC3",
+        "region_id": 1
+      },
+      {
+        "region_country": "Norge",
+        "region_icon": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+        "dc_id": 9,
+        "dc_name": "DC4",
+        "region_id": 1,
+        "region_name": "Sandefjord",
+        "region_name_short": "SFJ, NO",
+        "region_location": "Sandefjord"
+      }
+    ],
+    "currency": "NOK",
+    "eligibility": {
+      "credit_nok": 5000,
+      "hourly_usage": 0,
+      "hourly_percent": 0,
+      "hourly_currency": "NOK",
+      "has_method": false,
+      "has_paid_invoice": true,
+      "qualifies_arrears": false,
+      "hourly_applies": false,
+      "hourly_allowance": 0,
+      "verified": 0,
+      "method_qualifies": false
+    }
+  }
+}

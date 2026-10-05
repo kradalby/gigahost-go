@@ -1,0 +1,9 @@
+{
+  "ssh_public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK7Ac1/szE8PdQNP0udhvIAexm7URFrrV4yqG55VDu1c",
+  "keep_failed": true,
+  "type": "performance",
+  "size": "2c-4gb-40gb",
+  "region": "sfj",
+  "ssh_key_id": "2952",
+  "ssh_key_name": "tf-acc-os-matrix-836309"
+}

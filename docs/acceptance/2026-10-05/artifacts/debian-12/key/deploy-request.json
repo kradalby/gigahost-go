@@ -1,0 +1,13 @@
+{
+  "os_id": "101",
+  "quantity": 1,
+  "hostnames": [
+    "tf-acc-os-matrix-568518"
+  ],
+  "ssh_keys": [
+    "2952"
+  ],
+  "pid": "7951",
+  "price_id": "4234",
+  "region_id": "1"
+}

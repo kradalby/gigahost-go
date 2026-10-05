@@ -1,0 +1,15 @@
+OS	Auth	Result	Reason	Log
+rockylinux-9	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T084402Z-interrupted.jsonl
+debian-12	key	fail	SSH connection timed out	deploy-matrix-20261005T084402Z-interrupted.jsonl
+almalinux-10	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T084402Z-interrupted.jsonl
+ubuntu-26.04	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T084402Z-interrupted.jsonl
+almalinux-10	key	fail	SSH rejected the shared key	deploy-matrix-20261005T084402Z-interrupted.jsonl
+ubuntu-24.04	key	pass		deploy-matrix-20261005T084402Z-interrupted.jsonl
+debian-12	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T085755Z-resume.jsonl
+debian-13	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T085755Z-resume.jsonl
+ubuntu-24.04	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T085755Z-resume.jsonl
+ubuntu-26.04	key	pass		deploy-matrix-20261005T085755Z-resume.jsonl
+debian-13	key	pass		deploy-matrix-20261005T085755Z-resume.jsonl
+fedora-43-server	key	fail	SSH rejected the shared key	deploy-matrix-20261005T085755Z-resume.jsonl
+fedora-43-server	password	fail	No root password in provider state; password SSH not attempted	deploy-matrix-20261005T085755Z-resume.jsonl
+rockylinux-9	key	fail	SSH rejected the shared key	deploy-matrix-20261005T085755Z-resume.jsonl

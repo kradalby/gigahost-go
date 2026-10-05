@@ -1,0 +1,15 @@
+OS	Auth	Result	Server ID	Retained	Elapsed seconds	Reason	Evidence
+debian-12	key	pass	18845	False	278.37		artifacts/debian-12/key
+debian-12	password	pass	18851	False	258.58		artifacts/debian-12/password
+debian-13	key	pass	18857	False	209.69		artifacts/debian-13/key
+debian-13	password	fail		False	903.17	deployment timed out without a VM	artifacts/debian-13/password
+ubuntu-24.04	key	pass	18850	False	385.83		artifacts/ubuntu-24.04/key
+ubuntu-24.04	password	pass	18856	False	385.32		artifacts/ubuntu-24.04/password
+ubuntu-26.04	key	pass	18855	False	374.32		artifacts/ubuntu-26.04/key
+ubuntu-26.04	password	pass	18847	False	414.06		artifacts/ubuntu-26.04/password
+almalinux-10	key	fail	18852	True	512.46	SSH authentication rejected	artifacts/almalinux-10/key
+almalinux-10	password	fail	18853	True	512.46	SSH authentication rejected	artifacts/almalinux-10/password
+rockylinux-9	key	fail	18854	True	218.18	SSH connection timeout	artifacts/rockylinux-9/key
+rockylinux-9	password	fail	18846	True	596.03	SSH authentication rejected	artifacts/rockylinux-9/password
+fedora-43-server	key	fail	18849	True	422.45	SSH authentication rejected	artifacts/fedora-43-server/key
+fedora-43-server	password	fail	18848	True	437.78	SSH authentication rejected	artifacts/fedora-43-server/password

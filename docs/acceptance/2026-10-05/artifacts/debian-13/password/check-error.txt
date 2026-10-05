@@ -1,0 +1,12 @@
+Error running apply: exit status 1
+
+Error: Server did not become ready
+
+  with gigahost_server.test,
+  on terraform_plugin_test.tf line 13, in resource "gigahost_server" "test":
+  13: resource "gigahost_server" "test" {
+
+context deadline exceeded
+
+Server 0 (order 35991) was saved to state and marked tainted; the next apply
+will replace it, cancelling this one.

@@ -1,0 +1,11 @@
+{
+  "price_id": "4234",
+  "region_id": "1",
+  "os_id": "117",
+  "quantity": 1,
+  "hostnames": [
+    "tf-acc-os-matrix-904376"
+  ],
+  "ssh_keys": [],
+  "pid": "7951"
+}

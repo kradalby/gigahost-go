@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "maintenance": false,
+    "time": 1791196976,
+    "message": "200 OK",
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": {
+    "message": "Servers queued for deployment.",
+    "order_ids": [
+      35985
+    ],
+    "order_numbers": [
+      17830
+    ],
+    "quantity": 1,
+    "rate_hourly": 0.19007,
+    "monthly_cap": 119,
+    "currency": "NOK",
+    "success": true
+  }
+}

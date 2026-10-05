@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK",
+    "maintenance": false,
+    "time": 1790600630,
+    "message": "200 OK"
+  },
+  "data": [
+    {
+      "record_id": "6ba174b3cf77458b5655b0cc70435ae8",
+      "record_name": "www",
+      "record_type": "A",
+      "record_value": "192.0.2.19",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "e8467ad85ecc044fc27e7c9db9e98893",
+      "record_name": "@",
+      "record_type": "SOA",
+      "record_value": "ns1.gigahost.no. hostmaster.kradalby.no. 0 10800 3600 604800 3600",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "8e8639248afd4fddd591b40c34c14d95",
+      "record_name": "@",
+      "record_type": "NS",
+      "record_value": "gerald.ns.cloudflare.com",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "eb783e71f3d42bd60db8e395b50fbfa5",
+      "record_name": "@",
+      "record_type": "NS",
+      "record_value": "jasmine.ns.cloudflare.com",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "a7ada303446c2897aec3c9d385f771e4",
+      "record_name": "@",
+      "record_type": "A",
+      "record_value": "192.0.2.19",
+      "record_ttl": 3600,
+      "record_priority": null
+    }
+  ]
+}

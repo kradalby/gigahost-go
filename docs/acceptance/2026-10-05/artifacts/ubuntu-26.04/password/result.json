@@ -1,0 +1,7 @@
+{
+  "case": "TestAccServer_perOS/ubuntu-26.04/password",
+  "server_id": "18847",
+  "passed": true,
+  "retained": false,
+  "test_elapsed_seconds": 414.06
+}

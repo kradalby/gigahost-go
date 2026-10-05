@@ -1,0 +1,26 @@
+{
+  "data": {
+    "servers": [
+      {
+        "order_number": "17832",
+        "hostname": "tf-acc-os-matrix-502725",
+        "ip": "185.14.97.236",
+        "ipv6": "2a03:94e0:ffff:185:14:97::236",
+        "status": "ready",
+        "password": "",
+        "install_progress": null,
+        "order_id": 35990,
+        "srv_id": 18857,
+        "app": null
+      }
+    ],
+    "all_ready": true
+  },
+  "meta": {
+    "status_message": "200 OK",
+    "maintenance": false,
+    "time": 1791197635,
+    "message": "200 OK",
+    "status": 200
+  }
+}

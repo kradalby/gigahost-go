@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "status": 400,
+    "status_message": "400 Bad Request",
+    "maintenance": false,
+    "time": 1790600630,
+    "message": "Redirects are not available for externally hosted domains."
+  },
+  "data": []
+}

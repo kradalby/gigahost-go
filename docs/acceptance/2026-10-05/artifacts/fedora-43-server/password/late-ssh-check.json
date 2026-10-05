@@ -1,0 +1,9 @@
+{
+  "server_id": "18848",
+  "auth": "password",
+  "observed_at": "2026-10-05T11:52:54.798558+00:00",
+  "elapsed_seconds": 4.809918,
+  "passed": false,
+  "stdout": "",
+  "error": "root@185.14.97.240: Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password)."
+}

@@ -1,0 +1,8 @@
+{
+  "server_id": "18858",
+  "order_id": "35991",
+  "observed_at": "2026-10-05T11:43:28Z",
+  "api_status": "ready",
+  "ssh_password_check": "not run; install-time password was missed after the original test timed out",
+  "original_result": "deployment timed out after 15 minutes; not an OS or SSH failure"
+}

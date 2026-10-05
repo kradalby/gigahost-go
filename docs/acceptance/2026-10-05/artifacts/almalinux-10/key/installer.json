@@ -1,0 +1,6 @@
+{
+  "sshkey": true,
+  "root_password": "",
+  "date_started": "1791196988",
+  "prov_post": "mkdir -p /root/.ssh\nchmod 0700 /root/.ssh\necho \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK7Ac1/szE8PdQNP0udhvIAexm7URFrrV4yqG55VDu1c\" > /root/.ssh/authorized_keys\nchmod 0600 /root/.ssh/authorized_keys\nsed -i \"s/^#\\?PasswordAuthentication.*/PasswordAuthentication no/\" /etc/ssh/sshd_config\ngrep -q \"^PasswordAuthentication\" /etc/ssh/sshd_config || echo \"PasswordAuthentication no\" >> /etc/ssh/sshd_config\nsed -i \"s/^#\\?PubkeyAuthentication.*/PubkeyAuthentication yes/\" /etc/ssh/sshd_config\ngrep -q \"^PubkeyAuthentication\" /etc/ssh/sshd_config || echo \"PubkeyAuthentication yes\" >> /etc/ssh/sshd_config\n"
+}

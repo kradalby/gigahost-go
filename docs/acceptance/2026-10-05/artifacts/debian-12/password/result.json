@@ -1,0 +1,7 @@
+{
+  "case": "TestAccServer_perOS/debian-12/password",
+  "server_id": "18851",
+  "passed": true,
+  "retained": false,
+  "test_elapsed_seconds": 258.58
+}
