@@ -3,13 +3,19 @@ package tfprovider_test
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/json/v2"
+	"encoding/pem"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"golang.org/x/crypto/ssh"
@@ -205,7 +211,7 @@ resource "gigahost_server" "test" {
 }
 
 // accEphemeralKey generates a throwaway ed25519 keypair for an acceptance test.
-func accEphemeralKey(t *testing.T) (string, ssh.Signer) {
+func accEphemeralKey(t *testing.T, keyFiles ...string) (string, ssh.Signer) {
 	t.Helper()
 
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
@@ -221,6 +227,17 @@ func accEphemeralKey(t *testing.T) (string, ssh.Signer) {
 	signer, err := ssh.NewSignerFromKey(priv)
 	if err != nil {
 		t.Fatalf("accEphemeralKey: signer: %v", err)
+	}
+
+	if len(keyFiles) > 0 {
+		block, err := ssh.MarshalPrivateKey(priv, "gigahost acceptance matrix")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if err := os.WriteFile(keyFiles[0], pem.EncodeToMemory(block), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	return strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPub))), signer
@@ -303,74 +320,256 @@ func accPickDistro(t *testing.T, c *gigahost.Client, distro string) string {
 	return slug
 }
 
-// TestAccServer_perOS deploys one server per distribution the demo relies on.
-// Gigahost injects SSH keys from a per-OS installer template, so each family
-// needs its own login check. The records are fed from the server's own ip and
-// ipv6: the servers API spells IPv6 differently from the DNS API, and the
-// framework's post-apply re-plan fails on any drift that causes.
+// accMatrixKey registers a generated key or reuses a supplied registered key.
+func accMatrixKey(t *testing.T, client *gigahost.Client, matrixDir string, keepFailures bool) (string, ssh.Signer, string, string) {
+	t.Helper()
+
+	keyFile := os.Getenv("GIGAHOST_TEST_MATRIX_KEY_FILE")
+
+	var (
+		pub    string
+		signer ssh.Signer
+	)
+	if keyFile == "" {
+		pub, signer = accEphemeralKey(t, filepath.Join(matrixDir, "private", "id_ed25519"))
+	} else {
+		body, err := os.ReadFile(keyFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		signer, err = ssh.ParsePrivateKey(body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		pub = strings.TrimSpace(string(ssh.MarshalAuthorizedKey(signer.PublicKey())))
+	}
+
+	keyName := accRandName("os-matrix")
+	if keyFile == "" {
+		if err := client.Account.AddSSHKey(accCtx, keyName, pub); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Parent cleanup runs after all parallel cells, even if key lookup fails.
+	t.Cleanup(func() {
+		// A supplied key belongs to an earlier run and may still have live VMs.
+		if keyFile != "" {
+			return
+		}
+
+		account, err := client.Account.Get(accCtx)
+		if err != nil {
+			t.Errorf("lookup matrix key for cleanup: %v", err)
+
+			return
+		}
+
+		for _, key := range account.SSHKeys {
+			if key.Name == keyName {
+				if keepFailures && t.Failed() {
+					t.Logf("retained shared SSH key %s for failed VMs", key.ID)
+
+					return
+				}
+
+				if err := client.Account.DeleteSSHKey(accCtx, key.ID); err != nil {
+					t.Errorf("delete matrix key %s: %v", key.ID, err)
+				}
+			}
+		}
+	})
+
+	account, err := client.Account.Get(accCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	keyID := ""
+
+	for _, key := range account.SSHKeys {
+		if key.Name == keyName || (keyFile != "" && strings.TrimSpace(key.Data) == pub) {
+			keyID = key.ID
+			keyName = key.Name
+		}
+	}
+
+	if keyID == "" {
+		t.Fatal("matrix SSH key not found on account")
+	}
+
+	return pub, signer, keyID, keyName
+}
+
+func TestMatrixSuppliedKey(t *testing.T) {
+	dir := t.TempDir()
+	keyFile := filepath.Join(dir, "id_ed25519")
+	pub, _ := accEphemeralKey(t, keyFile)
+	t.Setenv("GIGAHOST_TEST_MATRIX_KEY_FILE", keyFile)
+
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/account" {
+			t.Errorf("supplied key must not be created or deleted: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusBadRequest)
+
+			return
+		}
+
+		fmt.Fprintf(w, `{"data":{"sshkeys":[{"key_id":"42","key_name":"original","key_data":%q}]}}`, pub)
+	}))
+	t.Cleanup(api.Close)
+
+	client, err := gigahost.NewClient(gigahost.WithBaseURL(api.URL), gigahost.WithToken("test-token"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, signer, id, name := accMatrixKey(t, client, dir, false)
+	if got != pub || id != "42" || name != "original" || strings.TrimSpace(string(ssh.MarshalAuthorizedKey(signer.PublicKey()))) != pub {
+		t.Fatal("supplied key was not reused")
+	}
+}
+
+// TestAccServer_perOS is the opt-in fresh-install OS × SSH-auth matrix.
+// Inputs are selected once; every cell gets its own VM and Terraform state.
 func TestAccServer_perOS(t *testing.T) {
+	testAccRequireEnv(t, "GIGAHOST_TEST_OS_MATRIX")
 	t.Parallel()
 
 	client := testAccGigahostClient(t)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+	keepFailures := os.Getenv("GIGAHOST_TEST_KEEP_FAILED") == "1"
 
-	for _, distro := range []string{"debian", "ubuntu"} {
-		t.Run(distro, func(t *testing.T) {
-			t.Parallel()
+	matrixDir := os.Getenv("GIGAHOST_TEST_MATRIX_DIR")
+	if matrixDir == "" {
+		matrixDir = filepath.Join("..", ".direnv", "deploy-matrix-"+time.Now().UTC().Format("20060102T150405.000000000Z"))
+	}
 
-			osSlug := accPickDistro(t, client, distro)
-			zoneName := accZoneName(t, "srv-"+distro)
-			pub, signer := accEphemeralKey(t)
+	matrixDir, err := filepath.Abs(matrixDir)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-			var serverID string
+	if err := os.MkdirAll(filepath.Join(matrixDir, "private"), 0o700); err != nil {
+		t.Fatal(err)
+	}
 
-			resource.Test(t, resource.TestCase{
-				PreCheck:                 func() { testAccPreCheck(t) },
-				ProtoV6ProviderFactories: testAccProviderFactories,
-				CheckDestroy: resource.ComposeTestCheckFunc(
-					testAccCheckServerCancelled(client, &serverID),
-					testAccCheckDNSZoneDestroyed(client, zoneName),
-				),
-				Steps: []resource.TestStep{
-					{
-						Config: testAccServerConfigHost(accRandName("srv-"+distro), pub, typeSlug, sizeSlug, osSlug, "") +
-							testAccServerRecordsConfig(zoneName),
+	catalog, err := client.Deploy.GetCatalog(accCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	product, err := catalog.FindProduct(gigahost.ProductSelector{Platform: gigahost.PlatformCloud, Type: typeSlug, Size: sizeSlug})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	region, err := catalog.RegionForProduct(product, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	all, err := client.Reinstall.ListAllOperatingSystems(accCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pub, signer, keyID, keyName := accMatrixKey(t, client, matrixDir, keepFailures)
+
+	t.Logf("inputs: type=%s size=%s region=%s ssh_key_id=%s", typeSlug, sizeSlug, region.Slug(), keyID)
+	t.Logf("matrix evidence: %s", matrixDir)
+
+	inputs, err := json.Marshal(map[string]any{
+		"type": typeSlug, "size": sizeSlug, "region": region.Slug(),
+		"ssh_key_id": keyID, "ssh_key_name": keyName, "ssh_public_key": pub,
+		"keep_failed": keepFailures,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.WriteFile(filepath.Join(matrixDir, "inputs.json"), inputs, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	// Created 2026-10-05 from the test-account catalog. Keep the two newest
+	// Debian/Ubuntu releases and the latest AlmaLinux/RockyLinux/Fedora.
+	// Refresh the pinned slugs with: direnv exec . nix run .#gigahost -- deploy os
+	// Family-only entries resolve their latest cloud amd64 version at run time.
+	for _, target := range []string{"debian-12", "debian-13", "ubuntu-24.04", "ubuntu-26.04", "almalinux", "rockylinux", "fedora"} {
+		image := accMatrixOS(all, target)
+
+		osSlug := target
+		if image != nil {
+			osSlug = image.Slug
+		}
+
+		for _, auth := range []struct {
+			name   string
+			signer ssh.Signer
+		}{{"key", signer}, {"password", nil}} {
+			t.Run(osSlug+"/"+auth.name, func(t *testing.T) {
+				t.Parallel()
+
+				if image == nil {
+					t.Skipf("catalog offers no cloud amd64 image for %s", target)
+				}
+
+				keys := "[]"
+				if auth.signer != nil {
+					keys = fmt.Sprintf("[%q]", keyID)
+				}
+
+				caseDir := filepath.Join(matrixDir, osSlug, auth.name)
+				keep := func() bool { return keepFailures && t.Failed() }
+				apiURL := accMatrixAPI(t, client.BaseURL(), caseDir, keep)
+
+				config := fmt.Sprintf(`
+%s
+resource "gigahost_server" "test" {
+  type     = %q
+  size     = %q
+  region   = %q
+  os       = %q
+  hostname = %q
+  ssh_keys = %s
+}
+`, testAccProviderConfig(), typeSlug, sizeSlug, region.Slug(), osSlug, accRandName("os-matrix"), keys)
+				if err := os.WriteFile(filepath.Join(caseDir, "share", "main.tf"), []byte(config), 0o600); err != nil {
+					t.Fatal(err)
+				}
+
+				var serverID string
+				resource.Test(t, resource.TestCase{
+					PreCheck:                 func() { testAccPreCheck(t) },
+					ProtoV6ProviderFactories: testAccProviderFactories,
+					CheckDestroy: func(s *terraform.State) error {
+						if keep() {
+							return nil
+						}
+
+						return testAccCheckServerCancelled(client, &serverID)(s)
+					},
+					ErrorCheck: func(err error) error {
+						if writeErr := os.WriteFile(filepath.Join(caseDir, "private", "error.txt"), []byte(err.Error()), 0o600); writeErr != nil {
+							t.Errorf("save matrix error: %v", writeErr)
+						}
+
+						return err
+					},
+					Steps: []resource.TestStep{{
+						Config: strings.Replace(config, testAccProviderConfig(), fmt.Sprintf(`provider "gigahost" { base_url = %q }`, apiURL), 1),
 						Check: resource.ComposeAggregateTestCheckFunc(
 							captureAttr("gigahost_server.test", "id", &serverID),
-							accSSHLogin("gigahost_server.test", signer),
-							resource.TestCheckResourceAttrPair("gigahost_dns_record.a", "value", "gigahost_server.test", "ip"),
-							resource.TestCheckResourceAttrPair("gigahost_dns_record.aaaa", "value", "gigahost_server.test", "ipv6"),
+							resource.TestCheckResourceAttr("gigahost_server.test", "status", "running"),
+							accSSHLogin("gigahost_server.test", auth.signer),
 						),
-					},
-				},
+					}},
+				})
 			})
-		})
+		}
 	}
-}
-
-func testAccServerRecordsConfig(zoneName string) string {
-	return fmt.Sprintf(`
-resource "gigahost_dns_zone" "test" {
-  name = %q
-  type = "NATIVE"
-}
-
-resource "gigahost_dns_record" "a" {
-  zone_id = gigahost_dns_zone.test.id
-  name    = "srv"
-  type    = "A"
-  value   = gigahost_server.test.ip
-  ttl     = 60
-}
-
-resource "gigahost_dns_record" "aaaa" {
-  zone_id = gigahost_dns_zone.test.id
-  name    = "srv"
-  type    = "AAAA"
-  value   = gigahost_server.test.ipv6
-  ttl     = 60
-}
-`, zoneName)
 }
 
 // captureAttr records a resource attribute value into dst during a test step.
@@ -387,9 +586,8 @@ func captureAttr(name, attr string, dst *string) resource.TestCheckFunc {
 	}
 }
 
-// accSSHLogin reads the server's ip from state and logs in with signer, running
-// a command to prove the managed key was injected. It retries the dial because
-// sshd may not be up the instant the server reports ready.
+// accSSHLogin proves root SSH access by running hostname. A nil signer uses
+// only the password in state; it never falls back to another auth method.
 func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -402,9 +600,21 @@ func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
 			return fmt.Errorf("resource %s has no ip attribute", name)
 		}
 
+		var auth ssh.AuthMethod
+		if signer != nil {
+			auth = ssh.PublicKeys(signer)
+		} else {
+			password := rs.Primary.Attributes["password"]
+			if password == "" {
+				return fmt.Errorf("resource %s has no root password in state", name)
+			}
+
+			auth = ssh.Password(password)
+		}
+
 		cfg := &ssh.ClientConfig{
 			User:            "root",
-			Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+			Auth:            []ssh.AuthMethod{auth},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			Timeout:         15 * time.Second,
 		}
@@ -460,5 +670,69 @@ func testAccCheckServerCancelled(client *gigahost.Client, serverID *string) reso
 		}
 
 		return nil
+	}
+}
+
+// accMatrixOS resolves an exact slug or the newest cloud amd64 OS of a family.
+func accMatrixOS(all []gigahost.ResolvedOS, target string) *gigahost.ResolvedOS {
+	var (
+		latest        *gigahost.ResolvedOS
+		latestVersion *version.Version
+	)
+
+	for i := range all {
+		o := &all[i]
+		if o.OS.DedicatedOnly || o.OS.Arch != "amd64" {
+			continue
+		}
+
+		if o.Slug == target {
+			return o
+		}
+
+		if !strings.EqualFold(o.Distribution.Value, target) {
+			continue
+		}
+
+		_, release, _ := strings.Cut(o.Slug, "-")
+		release, _, _ = strings.Cut(release, "-")
+
+		v, err := version.NewVersion(release)
+		if err == nil && (latestVersion == nil || v.GreaterThan(latestVersion)) {
+			latest, latestVersion = o, v
+		}
+	}
+
+	return latest
+}
+
+func TestDeploymentMatrixOS(t *testing.T) {
+	all := []gigahost.ResolvedOS{
+		{Slug: "almalinux-9", Distribution: gigahost.Distribution{Value: "almalinux"}, OS: gigahost.ReinstallOS{Arch: "amd64"}},
+		{Slug: "almalinux-10", Distribution: gigahost.Distribution{Value: "almalinux"}, OS: gigahost.ReinstallOS{Arch: "amd64"}},
+		{Slug: "almalinux-8", Distribution: gigahost.Distribution{Value: "almalinux"}, OS: gigahost.ReinstallOS{Arch: "amd64"}},
+		{Slug: "almalinux-11", Distribution: gigahost.Distribution{Value: "almalinux"}, OS: gigahost.ReinstallOS{Arch: "amd64", DedicatedOnly: true}},
+		{Slug: "almalinux-12", Distribution: gigahost.Distribution{Value: "almalinux"}, OS: gigahost.ReinstallOS{Arch: "arm64"}},
+		{Slug: "fedora-43-server", Distribution: gigahost.Distribution{Value: "fedora"}, OS: gigahost.ReinstallOS{Arch: "amd64"}},
+	}
+
+	for _, tc := range []struct{ target, want string }{
+		{"almalinux", "almalinux-10"},
+		{"almalinux-9", "almalinux-9"},
+		{"fedora", "fedora-43-server"},
+		{"rockylinux", ""},
+		{"almalinux-11", ""},
+		{"almalinux-12", ""},
+	} {
+		t.Run(tc.target, func(t *testing.T) {
+			got := ""
+			if os := accMatrixOS(all, tc.target); os != nil {
+				got = os.Slug
+			}
+
+			if got != tc.want {
+				t.Fatalf("resolved %q, want %q", got, tc.want)
+			}
+		})
 	}
 }

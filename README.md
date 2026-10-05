@@ -153,6 +153,58 @@ $ nix run .#test-acc   # Terraform acceptance tests (TF_ACC, via OpenTofu)
 $ nix run .#test-e2e   # Go SDK e2e + CLI smoke tests (-tags e2e)
 ```
 
+### Fresh-install support matrix
+
+`TestAccServer_perOS` covers Debian 12/13, Ubuntu 24.04/26.04 and the latest
+cloud amd64 AlmaLinux, RockyLinux and Fedora in the live catalog. Each OS gets
+separate key and password deployments. All cases share the same size, region
+and generated SSH key; password cases omit `ssh_keys` and require the password
+in provider state. Success means root SSH can run `hostname`. Each VM is
+cancelled after its check, including failures, unless failed-VM retention is
+explicitly enabled below. There are no reinstalls.
+
+Run locally from this checkout: `.envrc` loads the test-account token from
+`infra/gigahost/dev/api-token`. The matrix needs its own opt-in, so ordinary
+acceptance runs and CI skip it. Save Go's JSON test events to compare runs:
+
+```sh
+umask 077
+matrix_dir="$PWD/.direnv/deploy-matrix-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$matrix_dir"
+GIGAHOST_TEST_MATRIX_DIR="$matrix_dir" direnv exec . nix develop --command sh -c '
+  export TF_ACC=1 GIGAHOST_TEST_OS_MATRIX=1
+  export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
+  export GIGAHOST_TEST_DEPLOY_TYPE=performance
+  export GIGAHOST_TEST_DEPLOY_SIZE=2c-4gb-40gb
+  go test -json -count=1 -timeout 2h -parallel 4 ./tfprovider \
+    -run "^TestAccServer_perOS$"
+' > "$matrix_dir/events.jsonl"
+
+jq -r '
+  (.case | split("/")) as $case
+  | [$case[1], $case[2], .server_id,
+     (if .passed then "pass" else "fail" end), .retained] | @tsv
+' "$matrix_dir"/*/*/share/result.json
+```
+
+`-parallel 1` runs serially. Add `/debian-13/key` to `-run` to rerun one cell.
+To reuse a retained run's key, set `GIGAHOST_TEST_MATRIX_KEY_FILE` to its
+`private/id_ed25519`. It must still be registered on the account; the rerun
+leaves this supplied key intact.
+Subtest names contain the resolved versions, so "latest" results remain
+traceable when the catalog changes. Missing images are skipped, and missing
+passwords fail explicitly rather than falling back to key authentication.
+
+For console debugging, set `GIGAHOST_TEST_KEEP_FAILED=1` before running.
+Failed VMs and their shared account SSH key remain until manually cancelled;
+successful VMs are still cancelled. Each case saves its VM ID in
+`<os>/<auth>/share/result.json` and its Terraform config, exact deploy request,
+server response and API-provided installer details in the same `share/` folder.
+These JSON files redact passwords and tokens. Only share the `share/` files
+with Gigahost. The separate `private/` folders contain debug credentials and
+the run's SSH private key, all written with mode 0600. Installer details are
+captured while installing because the API removes them when installation ends.
+
 Some acceptance tests need live prerequisites the standard test account
 lacks and skip unless gated env vars are set:
 
