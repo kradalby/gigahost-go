@@ -330,10 +330,14 @@ func (s *ServersService) Cancel(ctx context.Context, serverID string) error {
 }
 
 // UpdateReverseRequest is the body for PUT /servers/{id}/reverse.
-// Exactly one of IPID (for IPv4) or SubnetID (for IPv6 NS delegation)
-// should be set.
+// Exactly one of IPID (one address) or SubnetID (IPv6 NS delegation)
+// should be set. An empty DNS clears the record.
 type UpdateReverseRequest struct {
-	IPID     string `json:"ip_id,omitzero"`
+	IPID string `json:"ip_id,omitzero"`
+	// Version selects the IPID entry ("ipv4" or "ipv6", as in
+	// [ServerIP.Version]): a primary IPv6 address shares its IPv4 ip_id.
+	// Defaults to "ipv4" when IPID is set.
+	Version  string `json:"v4v6,omitzero"`
 	SubnetID string `json:"sub_id,omitzero"`
 	DNS      string `json:"dns"`
 }
@@ -344,12 +348,13 @@ func (s *ServersService) UpdateReverse(ctx context.Context, serverID string, req
 		return errors.New("gigahost: UpdateReverse: serverID is empty")
 	}
 
-	if req.DNS == "" {
-		return errors.New("gigahost: UpdateReverse: DNS is required")
-	}
-
 	if req.IPID == "" && req.SubnetID == "" {
 		return errors.New("gigahost: UpdateReverse: one of IPID or SubnetID is required")
+	}
+
+	// The API answers a bare 400 when an ip_id arrives without v4v6.
+	if req.IPID != "" && req.Version == "" {
+		req.Version = "ipv4"
 	}
 
 	_, err := s.client.do(ctx, requestOptions{
@@ -413,7 +418,8 @@ func (s *ServersService) OrderIPv4(ctx context.Context, serverID string, ipType 
 		return errors.New("gigahost: OrderIPv4: serverID is empty")
 	}
 
-	body := map[string]string{"ip_type": string(ipType)}
+	// num_ips is mandatory although the API adds one IP per request regardless.
+	body := map[string]any{"ip_type": string(ipType), "num_ips": 1}
 
 	_, err := s.client.do(ctx, requestOptions{
 		method: "POST",

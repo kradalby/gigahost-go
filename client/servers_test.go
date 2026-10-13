@@ -154,7 +154,7 @@ func TestServersOrderIPv4(t *testing.T) {
 	srv, c := newServerAndClient(t)
 
 	srv.Expect("POST", "/servers/3523/ipv4").
-		WithJSON(`{"ip_type":"l3"}`).
+		WithJSON(`{"ip_type":"l3","num_ips":1}`).
 		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK"}}`)
 
 	if err := c.Servers.OrderIPv4(context.Background(), "3523", client.IPTypeL3); err != nil {
@@ -324,24 +324,34 @@ func TestServersUpdateReverse(t *testing.T) {
 
 	srv, c := newServerAndClient(t)
 
+	// v4v6 defaults to ipv4; without it the API answers a bare 400.
 	srv.Expect("PUT", "/servers/3523/reverse").
-		WithJSON(`{"ip_id":"9001","dns":"mail.example.no"}`).
-		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK"}}`)
+		WithJSON(`{"ip_id":"9001","v4v6":"ipv4","dns":"mail.example.no"}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK","message":"Reverse has been updated."}}`)
+	srv.Expect("PUT", "/servers/3523/reverse").
+		WithJSON(`{"ip_id":"9001","v4v6":"ipv6","dns":"mail.example.no"}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK","message":"Reverse has been updated."}}`)
+	// An empty dns clears the record.
+	srv.Expect("PUT", "/servers/3523/reverse").
+		WithJSON(`{"ip_id":"9001","v4v6":"ipv4","dns":""}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK","message":"Reverse has been updated."}}`)
+	srv.Expect("PUT", "/servers/3523/reverse").
+		WithJSON(`{"sub_id":"2236","dns":"ns1.example.no"}`).
+		Respond(http.StatusOK, `{"meta":{"status":200,"status_message":"200 OK","message":"Reverse has been updated."}}`)
 
-	err := c.Servers.UpdateReverse(context.Background(), "3523", client.UpdateReverseRequest{
-		IPID: "9001",
-		DNS:  "mail.example.no",
-	})
-	if err != nil {
-		t.Fatalf("UpdateReverse: %v", err)
+	for _, req := range []client.UpdateReverseRequest{
+		{IPID: "9001", DNS: "mail.example.no"},
+		{IPID: "9001", Version: "ipv6", DNS: "mail.example.no"},
+		{IPID: "9001"},
+		{SubnetID: "2236", DNS: "ns1.example.no"},
+	} {
+		if err := c.Servers.UpdateReverse(context.Background(), "3523", req); err != nil {
+			t.Fatalf("UpdateReverse(%+v): %v", req, err)
+		}
 	}
 
 	if err := c.Servers.UpdateReverse(context.Background(), "", client.UpdateReverseRequest{IPID: "9001", DNS: "x.no"}); err == nil {
 		t.Error("expected error for empty serverID")
-	}
-
-	if err := c.Servers.UpdateReverse(context.Background(), "3523", client.UpdateReverseRequest{IPID: "9001"}); err == nil {
-		t.Error("expected error for empty DNS")
 	}
 
 	if err := c.Servers.UpdateReverse(context.Background(), "3523", client.UpdateReverseRequest{DNS: "x.no"}); err == nil {

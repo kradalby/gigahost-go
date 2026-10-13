@@ -85,13 +85,10 @@ func TestAccServerRDNS_IPv4(t *testing.T) {
 				return fmt.Errorf("CheckDestroy: get server: %w", err)
 			}
 
+			// Scan every entry: the primary IPv6 entry shares ip_id and comes first.
 			for _, ip := range srv.IPs {
-				if ip.ID == ipID {
-					if ip.Reverse == dns1 || ip.Reverse == dns2 {
-						return fmt.Errorf("rDNS %q still set after destroy", ip.Reverse)
-					}
-
-					return nil
+				if ip.ID == ipID && (ip.Reverse == dns1 || ip.Reverse == dns2) {
+					return fmt.Errorf("rDNS %q still set after destroy", ip.Reverse)
 				}
 			}
 

@@ -153,7 +153,8 @@ func (r *serverRDNSResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	if ipID := state.IPID.ValueString(); ipID != "" {
 		for _, ip := range srv.IPs {
-			if ip.ID == ipID {
+			// The primary IPv6 entry shares this ip_id and carries no IPv4 reverse.
+			if ip.ID == ipID && ip.Version != "ipv6" {
 				state.DNS = types.StringValue(ip.Reverse)
 
 				resp.Diagnostics.Append(resp.State.Set(ctx, state)...)

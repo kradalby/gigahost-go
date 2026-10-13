@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -20,6 +21,7 @@ func newServersReverseCmd(c *Context, parent *ff.FlagSet, load func() error) *ff
 		ipID     string
 		subnetID string
 		dns      string
+		version  string
 	)
 
 	fs.StringVar(&ip, 0, "ip", "", "IP address on the server (resolved to its IP/subnet ID)")
@@ -61,12 +63,13 @@ func newServersReverseCmd(c *Context, parent *ff.FlagSet, load func() error) *ff
 					return err
 				}
 
-				ipID = entry.ID
-				subnetID = entry.SubnetID
+				// sub_id on an address is its network, not an IPv6 delegation subnet.
+				ipID, version = entry.ID, entry.Version
 			}
 
 			if err := client.Servers.UpdateReverse(ctx, serverID, gigahost.UpdateReverseRequest{
 				IPID:     ipID,
+				Version:  version,
 				SubnetID: subnetID,
 				DNS:      dns,
 			}); err != nil {
@@ -78,7 +81,8 @@ func newServersReverseCmd(c *Context, parent *ff.FlagSet, load func() error) *ff
 			if server, lookupErr := client.Servers.Get(ctx, serverID); lookupErr == nil {
 				// Find the IP we just updated.
 				for _, sip := range server.IPs {
-					if sip.ID == ipID || sip.SubnetID == subnetID {
+					if (ipID != "" && sip.ID == ipID && sip.Version == cmp.Or(version, "ipv4")) ||
+						(subnetID != "" && sip.SubnetID == subnetID) {
 						return c.Render(serverIPRow{
 							IPID:     sip.ID,
 							SubnetID: sip.SubnetID,

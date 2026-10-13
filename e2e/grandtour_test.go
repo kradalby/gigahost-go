@@ -85,7 +85,7 @@ func TestGrandTour(t *testing.T) {
 	// ---- reverse DNS on primary IPv4 ----
 	if srv, gerr := c.Servers.Get(ctx, serverID); gerr == nil {
 		for _, ip := range srv.IPs {
-			if ip.Version == "4" && ip.ID != "" {
+			if ip.Version == "ipv4" && ip.ID != "" {
 				err := c.Servers.UpdateReverse(ctx, serverID, gigahost.UpdateReverseRequest{
 					IPID: ip.ID,
 					DNS:  "tour." + uniqueName("rdns") + ".example.com",
