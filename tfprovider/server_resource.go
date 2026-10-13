@@ -297,9 +297,10 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				PlanModifiers:       []planmodifier.Bool{requiresReplaceUnlessAdoptingBool()},
 			},
 			"hostname": schema.StringAttribute{
-				MarkdownDescription: "Hostname for the new server.",
-				Optional:            true,
-				PlanModifiers:       requiresReplaceStr,
+				MarkdownDescription: "Hostname for the new server. When unset, an in-place reinstall " +
+					"reuses the server's name, which is its deploy hostname unless renamed.",
+				Optional:      true,
+				PlanModifiers: requiresReplaceStr,
 			},
 			"ssh_keys": schema.ListAttribute{
 				MarkdownDescription: "SSH key IDs to inject — reference `gigahost_account_ssh_key` " +
@@ -1338,13 +1339,37 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 			return
 		}
 
-		hostname := cmp.Or(plan.Hostname.ValueString(), state.Hostname.ValueString())
+		serverID := state.ID.ValueString()
 
-		res, err := r.reinstall(ctx, state.ID.ValueString(), resolved.OS.ID, hostname, plan.SSHKeys)
+		// Changing hostname replaces the server, so unset here means never
+		// configured. The live API leaves srv_hostname empty and keeps the
+		// deploy hostname in srv_name; sending none names the new OS after its IP.
+		hostname := plan.Hostname.ValueString()
+		if hostname == "" {
+			srv, err := r.client.Servers.Get(ctx, serverID)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to read server before reinstall",
+					fmt.Sprintf("server %s: %v\n\nNothing was reinstalled.", serverID, err))
+
+				return
+			}
+
+			hostname = cmp.Or(srv.Hostname, srv.Name)
+		}
+
+		res, err := r.reinstall(ctx, serverID, resolved.OS.ID, hostname, plan.SSHKeys)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to reinstall server", err.Error())
+			if cerr := r.confirmInstallStarted(ctx, serverID, resolved.OS.ID, err); cerr != nil {
+				resp.Diagnostics.AddError("Failed to reinstall server", cerr.Error())
 
-			return
+				return
+			}
+
+			resp.Diagnostics.AddWarning("Reinstall started without an acknowledgement",
+				fmt.Sprintf("server %s: %v\n\nThe server reports it is installing the requested "+
+					"operating system, so the reinstall went ahead.", serverID, err))
+
+			res = &gigahost.ReinstallResult{}
 		}
 
 		// The reinstall has happened: the disk is wiped and the root password
@@ -1534,6 +1559,28 @@ func (r *serverResource) reinstall(ctx context.Context, serverID, osID, hostname
 		Hostname: hostname,
 		SSHKeys:  sshKeys,
 	})
+}
+
+// confirmInstallStarted decides whether a reinstall the API never answered
+// took effect anyway: the API starts the install before it responds and can
+// hold the request past the client deadline. It returns nil only when the
+// server reports osID installing; a refusal is final and is returned as is.
+func (r *serverResource) confirmInstallStarted(ctx context.Context, serverID, osID string, cause error) error {
+	if _, refused := errors.AsType[*gigahost.APIError](cause); refused {
+		return cause
+	}
+
+	srv, err := r.client.Servers.Get(ctx, serverID)
+	if err != nil {
+		return fmt.Errorf("%w (reading the server back to check for a started install failed: %w)", cause, err)
+	}
+
+	if !srv.StatusInstall || srv.OSID != osID {
+		return fmt.Errorf("%w (server reports os_id %s, installing=%t: the install has not started)",
+			cause, srv.OSID, srv.StatusInstall)
+	}
+
+	return nil
 }
 
 // waitForInstall polls until the server reports it is no longer installing.

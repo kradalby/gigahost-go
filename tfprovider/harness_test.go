@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
+	gigahost "github.com/kradalby/gigahost-go/client"
 	"github.com/kradalby/gigahost-go/testhelper"
 )
 
@@ -44,7 +45,12 @@ func newHarness(t *testing.T) *harness {
 	api := testhelper.NewServer(t)
 	ctx := context.Background()
 
-	p := New("test", withHTTPClient(api.Client()))
+	// Give up on a silent fake exactly as the shipping client gives up on a
+	// silent API.
+	hc := *api.Client()
+	hc.Timeout = gigahost.DefaultHTTPTimeout
+
+	p := New("test", withHTTPClient(&hc))
 
 	srv := providerserver.NewProtocol6(p())()
 
