@@ -211,8 +211,14 @@
               export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
               export TF_ACC_PROVIDER_NAMESPACE=hashicorp
               export TF_ACC_PROVIDER_HOST=registry.opentofu.org
-              go test -v -timeout 30m ./tfprovider/...
+              go test -v -timeout 30m ./tfprovider/... "$@"
             '';
+
+            test-acc-repeat =
+              mkApp "test-acc-repeat" "Repeat provider acceptance tests and record stability evidence"
+                ''
+                  exec ${pkgs.python3}/bin/python3 scripts/test-acc-repeat.py "$@"
+                '';
 
             test-e2e = mkApp "test-e2e" "Run the live end-to-end suites" ''
               go test -tags e2e -v -timeout 30m ./e2e/... ./cli/...

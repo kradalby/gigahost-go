@@ -176,7 +176,7 @@ GIGAHOST_TEST_MATRIX_DIR="$matrix_dir" direnv exec . nix develop --command sh -c
   export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
   export GIGAHOST_TEST_DEPLOY_TYPE=performance
   export GIGAHOST_TEST_DEPLOY_SIZE=2c-4gb-40gb
-  go test -json -count=1 -timeout 2h -parallel 4 ./tfprovider \
+  go test -json -count=1 -timeout 4h -parallel 4 ./tfprovider \
     -run "^TestAccServer_perOS$"
 ' > "$matrix_dir/events.jsonl"
 
@@ -188,6 +188,10 @@ jq -r '
 ```
 
 `-parallel 1` runs serially. Add `/debian-13/key` to `-run` to rerun one cell.
+The matrix uses an explicit 45-minute create timeout to observe allocation
+queues; override it with `GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT`. The provider's
+default remains 15 minutes. SSH checks run immediately, retry within three
+minutes, and bound each complete attempt to 15 seconds.
 To reuse a retained run's key, set `GIGAHOST_TEST_MATRIX_KEY_FILE` to its
 `private/id_ed25519`. It must still be registered on the account; the rerun
 leaves this supplied key intact.
@@ -204,6 +208,58 @@ These JSON files redact passwords and tokens. Only share the `share/` files
 with Gigahost. The separate `private/` folders contain debug credentials and
 the run's SSH private key, all written with mode 0600. Installer details are
 captured while installing because the API removes them when installation ends.
+
+Repeat the matrix and the remaining Terraform acceptance suite three times:
+
+```console
+$ GIGAHOST_TEST_DEPLOY_TYPE=performance GIGAHOST_TEST_DEPLOY_SIZE=2c-4gb-40gb \
+    GIGAHOST_TEST_ZONE_APEX=test.headscale.no GIGAHOST_TEST_ZONE_NAME=test.headscale.no \
+    direnv exec . nix run .#test-acc-repeat -- --rounds 3 --parallel 4
+```
+
+Each round has a separate evidence directory. Failures from the first round
+are retained; later rounds cancel their VMs after recording evidence. If the
+first round retains its generated key, later rounds reuse it. Supplied keys
+are always preserved. Inputs are saved for every round, including the key.
+Missing live prerequisites remain explicit skips.
+The repeat runner also creates a disposable VM for existing-server name, rDNS,
+DNS integration, IPv4 ordering and import tests (`GIGAHOST_TEST_SERVER_FIXTURE=1`). Its IDs
+are scoped to those subtests; the fixture is cancelled after they finish.
+CLI-created server import uses another disposable VM within the fixture tests.
+The fixture also enables fresh-server IPv4 ordering; the suite checks reinstall
+with an explicitly supplied hostname as well as the default configuration.
+`GIGAHOST_TEST_ZONE_NAME` makes the multiple-record test create that exact
+dedicated zone, populate A/AAAA/TXT records, verify a no-op plan, then destroy
+it. Other DNS tests create unique zones beneath `GIGAHOST_TEST_ZONE_APEX`.
+
+`matrix.tsv` and `matrix.json` separate observed submission-to-allocation,
+submission-to-API-readiness, SSH and cleanup times. Deployments exceeding the
+provider's default timeout are flagged. Each case's `share/events.jsonl`
+preserves timestamped API responses, including the complete `install_progress`
+history observed by the provider. These are polling observations, so transitions
+between requests cannot be timed exactly. Disposable server tests also record
+API exchanges under `suite/<test>/share/`, with startup and cleanup summaries
+in `server-tests.json`. Requests and responses stay unchanged; recording only
+scrubs credentials from saved evidence. `stability.json` counts passes,
+failures and skips per test; mixed passes and failures indicate intermittency
+within this experiment. Three passes are evidence from three trials, not a
+guarantee. Raw Go test logs remain in each round's `private/` directory.
+
+The [2026-10-05 repeat results](docs/acceptance/2026-10-05/repeat-stability/README.md)
+include measured startup phases, coverage, retained VM IDs and a Gigahost report
+draft with sanitized request/response evidence.
+
+Summarize a running or completed experiment again with:
+
+```console
+$ direnv exec . nix run .#test-acc-repeat -- --summarize .direnv/acceptance-repeat-<timestamp>
+```
+
+After an interrupted scheduler's active test command finishes cleanup, resume
+the remaining commands with `--resume .direnv/acceptance-repeat-<timestamp>`.
+Completed commands are preserved. The runner uses a 12-hour outer Go timeout
+to allow serial matrices to finish their per-cell deadlines and cleanup;
+override it with `--timeout` when changing provisioning limits.
 
 Some acceptance tests need live prerequisites the standard test account
 lacks and skip unless gated env vars are set:

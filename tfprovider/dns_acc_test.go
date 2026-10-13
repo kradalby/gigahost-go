@@ -3,6 +3,7 @@ package tfprovider_test
 import (
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -217,7 +218,11 @@ func TestAccDNSRecord_TXT(t *testing.T) {
 // TestAccDNSRecord_multipleInZone creates a zone with three different record
 // types and verifies they coexist without conflict.
 func TestAccDNSRecord_multipleInZone(t *testing.T) {
-	zoneName := accZoneName(t, "rec-multi")
+	zoneName := os.Getenv("GIGAHOST_TEST_ZONE_NAME")
+	if zoneName == "" {
+		zoneName = accZoneName(t, "rec-multi")
+	}
+
 	client := testAccGigahostClient(t)
 
 	resource.Test(t, resource.TestCase{
@@ -228,10 +233,18 @@ func TestAccDNSRecord_multipleInZone(t *testing.T) {
 			{
 				Config: testAccDNSMultipleRecordsConfig(zoneName),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("gigahost_dns_zone.test", "name", zoneName),
 					resource.TestCheckResourceAttr("gigahost_dns_record.a", "type", "A"),
+					resource.TestCheckResourceAttr("gigahost_dns_record.a", "value", "1.2.3.4"),
 					resource.TestCheckResourceAttr("gigahost_dns_record.aaaa", "type", "AAAA"),
+					resource.TestCheckResourceAttr("gigahost_dns_record.aaaa", "value", "2001:db8::1"),
 					resource.TestCheckResourceAttr("gigahost_dns_record.txt", "type", "TXT"),
+					resource.TestCheckResourceAttr("gigahost_dns_record.txt", "value", "hello from terraform acc test"),
 				),
+			},
+			{
+				Config:   testAccDNSMultipleRecordsConfig(zoneName),
+				PlanOnly: true,
 			},
 		},
 	})

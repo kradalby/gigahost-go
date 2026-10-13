@@ -15,6 +15,7 @@ import (
 // appears, then destroys everything (snapshot deleted, server cancelled).
 func TestAccServerSnapshot(t *testing.T) {
 	client := testAccGigahostClient(t)
+	client, _ = accSuiteAPI(t, client)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	osSlug := accPickOS(t, client)
 	pub, _ := accEphemeralKey(t)

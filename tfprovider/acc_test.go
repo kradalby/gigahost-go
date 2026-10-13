@@ -114,7 +114,12 @@ func testAccGigahostClient(t *testing.T) *gigahost.Client {
 		t.Skip("GIGAHOST_TOKEN not set; skipping acceptance test")
 	}
 
-	c, err := gigahost.NewClient(gigahost.WithToken(token))
+	opts := []gigahost.Option{gigahost.WithToken(token)}
+	if baseURL := os.Getenv("GIGAHOST_BASE_URL"); baseURL != "" {
+		opts = append(opts, gigahost.WithBaseURL(baseURL))
+	}
+
+	c, err := gigahost.NewClient(opts...)
 	if err != nil {
 		t.Fatalf("testAccGigahostClient: %v", err)
 	}

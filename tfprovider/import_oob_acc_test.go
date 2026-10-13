@@ -60,6 +60,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -206,7 +207,10 @@ func runCLIJSON(t *testing.T, out any, args ...string) {
 
 	var stdout, stderr bytes.Buffer
 
-	code := cli.Run(context.Background(), append([]string{"-o", "json"}, args...), cli.Options{
+	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Minute)
+	defer cancel()
+
+	code := cli.Run(ctx, append([]string{"-o", "json"}, args...), cli.Options{
 		Version: "oob-acc",
 		Commit:  "oob-acc",
 		Stdout:  &stdout,

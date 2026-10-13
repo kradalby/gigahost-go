@@ -1,12 +1,14 @@
 package tfprovider_test
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/json/v2"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -29,6 +31,7 @@ import (
 // server and confirms it was cancelled.
 func TestAccServer_deployAndSSH(t *testing.T) {
 	client := testAccGigahostClient(t)
+	client, recorder := accSuiteAPI(t, client)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	osSlug := accPickOS(t, client)
 	pub, signer := accEphemeralKey(t)
@@ -56,7 +59,7 @@ func TestAccServer_deployAndSSH(t *testing.T) {
 					resource.TestCheckResourceAttrSet("gigahost_server.test", "rate_hourly"),
 					resource.TestCheckResourceAttr("gigahost_server.test", "platform", "cloud"),
 					captureAttr("gigahost_server.test", "id", &serverID),
-					accSSHLogin("gigahost_server.test", signer),
+					accSSHLogin("gigahost_server.test", signer, recorder),
 					// GET /servers lags behind a fresh deploy by a minute or
 					// two; the by_hostname lookup in step 2 needs the server
 					// listed, so wait for it (and confirm the hostname the
@@ -148,12 +151,13 @@ func testAccServerConfig(sshName, pubKey, typeSlug, sizeSlug, osSlug string) str
 // on both.
 func testAccWaitServerListed(client *gigahost.Client, serverID *string, wantHostname string) resource.TestCheckFunc {
 	return func(_ *terraform.State) error {
-		deadline := time.Now().Add(5 * time.Minute)
+		ctx, cancel := context.WithTimeout(accCtx, 5*time.Minute)
+		defer cancel()
 
 		var lastHostnames []string
 
-		for time.Now().Before(deadline) {
-			servers, err := client.Servers.List(accCtx)
+		return accWait(ctx, 15*time.Second, func(ctx context.Context) error {
+			servers, err := client.Servers.List(ctx)
 			if err != nil {
 				return fmt.Errorf("list servers: %w", err)
 			}
@@ -177,11 +181,8 @@ func testAccWaitServerListed(client *gigahost.Client, serverID *string, wantHost
 				return nil
 			}
 
-			time.Sleep(15 * time.Second)
-		}
-
-		return fmt.Errorf("server %s never appeared in GET /servers within 5m (listed hostnames: %v)",
-			*serverID, lastHostnames)
+			return fmt.Errorf("server %s not listed (listed hostnames: %v)", *serverID, lastHostnames)
+		})
 	}
 }
 
@@ -437,6 +438,15 @@ func TestAccServer_perOS(t *testing.T) {
 	testAccRequireEnv(t, "GIGAHOST_TEST_OS_MATRIX")
 	t.Parallel()
 
+	createTimeout := os.Getenv("GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT")
+	if createTimeout == "" {
+		createTimeout = "45m"
+	}
+
+	if duration, err := time.ParseDuration(createTimeout); err != nil || duration <= 0 {
+		t.Fatalf("invalid GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT %q", createTimeout)
+	}
+
 	client := testAccGigahostClient(t)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	keepFailures := os.Getenv("GIGAHOST_TEST_KEEP_FAILED") == "1"
@@ -483,7 +493,8 @@ func TestAccServer_perOS(t *testing.T) {
 	inputs, err := json.Marshal(map[string]any{
 		"type": typeSlug, "size": sizeSlug, "region": region.Slug(),
 		"ssh_key_id": keyID, "ssh_key_name": keyName, "ssh_public_key": pub,
-		"keep_failed": keepFailures,
+		"keep_failed":    keepFailures,
+		"create_timeout": createTimeout,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -493,9 +504,7 @@ func TestAccServer_perOS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Created 2026-10-05 from the test-account catalog. Keep the two newest
-	// Debian/Ubuntu releases and the latest AlmaLinux/RockyLinux/Fedora.
-	// Refresh the pinned slugs with: direnv exec . nix run .#gigahost -- deploy os
+	// Debian/Ubuntu versions are pinned for comparisons across runs.
 	// Family-only entries resolve their latest cloud amd64 version at run time.
 	for _, target := range []string{"debian-12", "debian-13", "ubuntu-24.04", "ubuntu-26.04", "almalinux", "rockylinux", "fedora"} {
 		image := accMatrixOS(all, target)
@@ -523,7 +532,7 @@ func TestAccServer_perOS(t *testing.T) {
 
 				caseDir := filepath.Join(matrixDir, osSlug, auth.name)
 				keep := func() bool { return keepFailures && t.Failed() }
-				apiURL := accMatrixAPI(t, client.BaseURL(), caseDir, keep)
+				apiURL, recorder := accMatrixAPI(t, client.BaseURL(), caseDir, keep)
 
 				config := fmt.Sprintf(`
 %s
@@ -534,8 +543,9 @@ resource "gigahost_server" "test" {
   os       = %q
   hostname = %q
   ssh_keys = %s
+  timeouts = { create = %q }
 }
-`, testAccProviderConfig(), typeSlug, sizeSlug, region.Slug(), osSlug, accRandName("os-matrix"), keys)
+`, testAccProviderConfig(), typeSlug, sizeSlug, region.Slug(), osSlug, accRandName("os-matrix"), keys, createTimeout)
 				if err := os.WriteFile(filepath.Join(caseDir, "share", "main.tf"), []byte(config), 0o600); err != nil {
 					t.Fatal(err)
 				}
@@ -552,6 +562,8 @@ resource "gigahost_server" "test" {
 						return testAccCheckServerCancelled(client, &serverID)(s)
 					},
 					ErrorCheck: func(err error) error {
+						recorder.event("terraform_error", map[string]any{"error_file": "private/error.txt"})
+
 						if writeErr := os.WriteFile(filepath.Join(caseDir, "private", "error.txt"), []byte(err.Error()), 0o600); writeErr != nil {
 							t.Errorf("save matrix error: %v", writeErr)
 						}
@@ -563,7 +575,7 @@ resource "gigahost_server" "test" {
 						Check: resource.ComposeAggregateTestCheckFunc(
 							captureAttr("gigahost_server.test", "id", &serverID),
 							resource.TestCheckResourceAttr("gigahost_server.test", "status", "running"),
-							accSSHLogin("gigahost_server.test", auth.signer),
+							accSSHLogin("gigahost_server.test", auth.signer, recorder),
 						),
 					}},
 				})
@@ -588,8 +600,24 @@ func captureAttr(name, attr string, dst *string) resource.TestCheckFunc {
 
 // accSSHLogin proves root SSH access by running hostname. A nil signer uses
 // only the password in state; it never falls back to another auth method.
-func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+func accSSHLogin(name string, signer ssh.Signer, recorders ...*accMatrixRecorder) resource.TestCheckFunc {
+	return func(s *terraform.State) (result error) {
+		var recorder *accMatrixRecorder
+		if len(recorders) > 0 {
+			recorder = recorders[0]
+		}
+
+		recorder.event("ssh_started", nil)
+
+		defer func() {
+			data := map[string]any{"passed": result == nil}
+			if result != nil {
+				data["error"] = result.Error()
+			}
+
+			recorder.event("ssh_finished", data)
+		}()
+
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("resource %s not found in state", name)
@@ -609,6 +637,15 @@ func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
 				return fmt.Errorf("resource %s has no root password in state", name)
 			}
 
+			if recorder != nil {
+				body, err := json.Marshal(map[string]string{"root_password": password})
+				if err != nil {
+					return err
+				}
+
+				recorder.write("private/ssh-credentials.json", body)
+			}
+
 			auth = ssh.Password(password)
 		}
 
@@ -619,42 +656,86 @@ func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
 			Timeout:         15 * time.Second,
 		}
 
-		deadline := time.Now().Add(3 * time.Minute)
+		ctx, cancel := context.WithTimeout(accCtx, 3*time.Minute)
+		defer cancel()
 
-		var lastErr error
-
-		for time.Now().Before(deadline) {
-			client, derr := ssh.Dial("tcp", ip+":22", cfg)
-			if derr != nil {
-				lastErr = derr
-
-				time.Sleep(10 * time.Second)
-
-				continue
+		return accWait(ctx, 10*time.Second, func(ctx context.Context) error {
+			err := accSSHAttempt(ctx, net.JoinHostPort(ip, "22"), cfg)
+			if err != nil {
+				recorder.event("ssh_attempt_failed", map[string]any{"error": err.Error()})
 			}
 
-			defer client.Close()
+			return err
+		})
+	}
+}
 
-			sess, serr := client.NewSession()
-			if serr != nil {
-				return fmt.Errorf("ssh session: %w", serr)
-			}
-			defer sess.Close()
+// accWait checks immediately and retains the last condition error on timeout.
+func accWait(ctx context.Context, interval time.Duration, check func(context.Context) error) error {
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 
-			out, rerr := sess.Output("hostname")
-			if rerr != nil {
-				return fmt.Errorf("ssh run hostname: %w", rerr)
-			}
-
-			if strings.TrimSpace(string(out)) == "" {
-				return errors.New("ssh hostname returned empty output")
-			}
-
+		err := check(ctx)
+		if err == nil {
 			return nil
 		}
 
-		return fmt.Errorf("ssh dial %s:22 failed within timeout: %w", ip, lastErr)
+		timer := time.NewTimer(interval)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+
+			return fmt.Errorf("%w; last check: %w", ctx.Err(), err)
+		case <-timer.C:
+		}
 	}
+}
+
+// A socket deadline bounds the handshake, session and command as well as dial.
+func accSSHAttempt(ctx context.Context, address string, cfg *ssh.ClientConfig) error {
+	ctx, cancel := context.WithTimeout(ctx, cfg.Timeout)
+	defer cancel()
+
+	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", address)
+	if err != nil {
+		return fmt.Errorf("ssh dial: %w", err)
+	}
+	defer conn.Close()
+
+	stop := context.AfterFunc(ctx, func() { conn.Close() })
+	defer stop()
+
+	deadline, _ := ctx.Deadline()
+	if err := conn.SetDeadline(deadline); err != nil {
+		return fmt.Errorf("ssh deadline: %w", err)
+	}
+
+	sshConn, channels, requests, err := ssh.NewClientConn(conn, address, cfg)
+	if err != nil {
+		return fmt.Errorf("ssh handshake: %w", err)
+	}
+
+	client := ssh.NewClient(sshConn, channels, requests)
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		return fmt.Errorf("ssh session: %w", err)
+	}
+	defer session.Close()
+
+	out, err := session.Output("hostname")
+	if err != nil {
+		return fmt.Errorf("ssh run hostname: %w", err)
+	}
+
+	if strings.TrimSpace(string(out)) == "" {
+		return errors.New("ssh hostname returned empty output")
+	}
+
+	return nil
 }
 
 // testAccCheckServerCancelled verifies, after destroy, that the server was

@@ -4,6 +4,7 @@ package tfprovider_test
 // the harness, shared design notes, and the full env-var matrix.
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,9 +25,9 @@ import (
 // gigahost_server_name by the server ID, and converges. Requires GIGAHOST_TOKEN
 // and GIGAHOST_TEST_SERVER_ID.
 //
-// Destroy semantics: the resource's Delete reverts the label to the server's
-// hostname (it does not delete the server). There is therefore no CheckDestroy
-// demanding server deletion; instead t.Cleanup restores the original label that
+// Destroy semantics: the resource's Delete resets the name to the server's
+// label (it does not delete the server). There is therefore no CheckDestroy
+// demanding server deletion; instead t.Cleanup restores the original name that
 // was captured before the test, so the server is left exactly as found.
 func TestAccImportOOB_ServerName(t *testing.T) {
 	serverID := testAccRequireEnv(t, "GIGAHOST_TEST_SERVER_ID")
@@ -34,18 +35,18 @@ func TestAccImportOOB_ServerName(t *testing.T) {
 
 	client := testAccGigahostClient(t)
 
-	// Capture the original label so cleanup can restore it.
+	// Capture the original name so cleanup can restore it.
 	original, err := client.Servers.Get(accCtx, serverID)
 	if err != nil {
 		t.Fatalf("get server %s: %v", serverID, err)
 	}
 
-	originalLabel := original.Label
+	originalName := original.Name
 	name := accRandName("oob-srvname")
 
 	runCLIJSON(t, nil, "servers", "rename", "--name", name, serverID)
 
-	t.Cleanup(func() { _ = client.Servers.UpdateName(accCtx, serverID, originalLabel) })
+	t.Cleanup(func() { _ = client.Servers.UpdateName(accCtx, serverID, originalName) })
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProviderFactories,
@@ -156,13 +157,10 @@ func testAccCheckOOBRDNSCleared(client *gigahost.Client, serverID, ipID, dns str
 			return fmt.Errorf("CheckDestroy: get server: %w", err)
 		}
 
+		// Scan every entry: the primary IPv6 entry shares ip_id and comes first.
 		for _, ip := range srv.IPs {
-			if ip.ID == ipID {
-				if ip.Reverse == dns {
-					return fmt.Errorf("rDNS %q still set on ip %s after destroy", dns, ipID)
-				}
-
-				return nil
+			if ip.ID == ipID && ip.Reverse == dns {
+				return fmt.Errorf("rDNS %q still set on ip %s after destroy", dns, ipID)
 			}
 		}
 
@@ -247,44 +245,67 @@ resource "gigahost_server_snapshot" "test" {
 // waitForSnapshotCompleted polls until the snapshot reaches the completed state
 // or a bound elapses (then it fails — a never-completing snapshot is a real
 // problem, not something to skip over). The bound mirrors the resource's own
-// 10-minute snapshotAppearTimeout.
+// 10-minute snapshotCreateTimeout. Absence after a sighting is terminal: the
+// API drops some pending snapshots without a failure state.
 func waitForSnapshotCompleted(t *testing.T, client *gigahost.Client, serverID string, snapID int64) {
 	t.Helper()
 
-	deadline := time.Now().Add(10 * time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
+	defer cancel()
 
-	for time.Now().Before(deadline) {
-		snaps, err := client.Snapshots.List(accCtx, serverID)
+	seen := false
+
+	err := accWait(ctx, 10*time.Second, func(ctx context.Context) error {
+		snaps, err := client.Snapshots.List(ctx, serverID)
 		if err != nil {
-			t.Fatalf("list snapshots: %v", err)
+			return fmt.Errorf("list snapshots: %w", err)
 		}
 
 		for _, s := range snaps {
-			if s.ID == snapID && s.State == gigahost.SnapshotStateCompleted {
-				return
+			if s.ID != snapID {
+				continue
 			}
+
+			seen = true
+
+			if s.State == gigahost.SnapshotStateCompleted {
+				return nil
+			}
+
+			return fmt.Errorf("snapshot %d state is %q", snapID, s.State)
 		}
 
-		time.Sleep(10 * time.Second)
-	}
+		if seen {
+			t.Fatalf("snapshot %d on server %s disappeared from the list before completing", snapID, serverID)
+		}
 
-	t.Fatalf("snapshot %d on server %s did not complete within 10m", snapID, serverID)
+		return fmt.Errorf("snapshot %d is absent from the server snapshot list", snapID)
+	})
+	if err != nil {
+		t.Fatalf("snapshot %d on server %s did not complete: %v", snapID, serverID, err)
+	}
 }
 
 func testAccCheckOOBSnapshotDestroyed(client *gigahost.Client, serverID string, snapID int64) resource.TestCheckFunc {
 	return func(_ *terraform.State) error {
-		snaps, err := client.Snapshots.List(accCtx, serverID)
-		if err != nil {
-			return fmt.Errorf("CheckDestroy: list snapshots: %w", err)
-		}
+		ctx, cancel := context.WithTimeout(accCtx, 10*time.Minute)
+		defer cancel()
 
-		for _, s := range snaps {
-			if s.ID == snapID {
-				return fmt.Errorf("snapshot %d still exists on server %s after destroy", snapID, serverID)
+		// Deletion is asynchronous; check its result rather than its acknowledgement.
+		return accWait(ctx, 10*time.Second, func(ctx context.Context) error {
+			snaps, err := client.Snapshots.List(ctx, serverID)
+			if err != nil {
+				return fmt.Errorf("CheckDestroy: list snapshots: %w", err)
 			}
-		}
 
-		return nil
+			for _, s := range snaps {
+				if s.ID == snapID {
+					return fmt.Errorf("snapshot %d still exists on server %s after destroy, state %q", snapID, serverID, s.State)
+				}
+			}
+
+			return nil
+		})
 	}
 }
 
@@ -310,8 +331,22 @@ func TestAccImportOOB_Server(t *testing.T) {
 	requireToken(t)
 
 	client := testAccGigahostClient(t)
+	client, recorder := accSuiteAPI(t, client)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	osSlug := accPickOS(t, client)
+
+	var serverID string
+
+	// Register cleanup before CLI polling so a failed wait still cancels an assigned VM.
+	t.Cleanup(func() {
+		if serverID == "" && recorder != nil {
+			serverID, _ = recorder.serverID.Load().(string)
+		}
+
+		if serverID != "" && serverID != "0" {
+			_ = client.Servers.Cancel(accCtx, serverID)
+		}
+	})
 
 	var deployed []struct {
 		ServerID string
@@ -334,10 +369,7 @@ func TestAccImportOOB_Server(t *testing.T) {
 		t.Fatalf("deploy returned no ready server: %+v", deployed)
 	}
 
-	serverID := deployed[0].ServerID
-
-	// Belt-and-braces: cancel the server even if the framework destroy fails.
-	t.Cleanup(func() { _ = client.Servers.Cancel(accCtx, serverID) })
+	serverID = deployed[0].ServerID
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProviderFactories,

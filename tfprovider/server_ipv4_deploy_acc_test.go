@@ -15,14 +15,13 @@ import (
 // server. It bills the server for a few minutes (cheapest VPS) like the other
 // deploy acceptance tests.
 //
-// Gated: POST /servers/{id}/ipv4 rejects every documented body shape with
-// "400 Invalid data received" (upstream B19), re-confirmed 2026-08-25 against
-// a freshly deployed server. Set GIGAHOST_TEST_IPV4_ORDER=1 to run it once
-// that endpoint works — the test needs no other setup.
+// Explicit opt-in: GIGAHOST_TEST_IPV4_ORDER=1. The repeat fixture enables it
+// against disposable servers so endpoint failures remain visible.
 func TestAccServerIPv4_deploy(t *testing.T) {
 	testAccRequireEnv(t, "GIGAHOST_TEST_IPV4_ORDER")
 
 	client := testAccGigahostClient(t)
+	client, _ = accSuiteAPI(t, client)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	osSlug := accPickOS(t, client)
 	pub, _ := accEphemeralKey(t)

@@ -1,9 +1,11 @@
 package tfprovider_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,7 +28,21 @@ import (
 // unreachable live — the account has no uploaded ISOs) is covered offline by
 // TestServerModifyPlanMatrix.
 func TestAccServerOSChangeMatrix(t *testing.T) {
+	accServerOSChange(t, "")
+}
+
+// Hostname is optional upstream; cover an explicit one beside the default,
+// which sends srv_name.
+func TestAccServerOSChangeWithHostname(t *testing.T) {
+	testAccRequireEnv(t, "GIGAHOST_TEST_SERVER_FIXTURE")
+	accServerOSChange(t, accRandName("oschange")+".example.com")
+}
+
+func accServerOSChange(t *testing.T, hostname string) {
+	t.Helper()
+
 	client := testAccGigahostClient(t)
+	client, recorder := accSuiteAPI(t, client)
 	typeSlug, sizeSlug := accCheapestTarget(t, client)
 	osA := accPickOS(t, client)
 	osB := accPickOSExcept(t, client, osA)
@@ -36,13 +52,26 @@ func TestAccServerOSChangeMatrix(t *testing.T) {
 	var serverID, deployIP, rescueServerID string
 
 	osConfig := func(osSlug string) string {
-		return testAccServerConfig(sshName, pub, typeSlug, sizeSlug, osSlug)
+		return testAccServerConfigHost(sshName, pub, typeSlug, sizeSlug, osSlug, hostname)
 	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProviderFactories,
 		CheckDestroy:             testAccCheckServerCancelled(client, &rescueServerID),
+		ErrorCheck: func(err error) error {
+			if err != nil && recorder != nil && serverID != "" {
+				// A timed-out acknowledgement may still have started installation.
+				ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+				defer cancel()
+
+				if _, readErr := client.Servers.Get(ctx, serverID); readErr != nil {
+					recorder.event("failure_state_read_error", map[string]any{"error": readErr.Error()})
+				}
+			}
+
+			return err
+		},
 		Steps: []resource.TestStep{
 			// 1. create with os A.
 			{
