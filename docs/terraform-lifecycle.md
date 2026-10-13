@@ -195,18 +195,18 @@ This resource is intentionally **create + update** (not create-only): power is a
 
 Backed by `SnapshotsService.Create` (async, returns no ID) / `List` / `Delete`.
 
-| Attribute                             | Type                              | Notes                                                                           |
-| ------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
-| `id`                                  | string, computed                  | `<server_id>/<snapshot_id>`.                                                    |
-| `server_id`                           | string, required, RequiresReplace | Owning server.                                                                  |
-| `name`                                | string, required, RequiresReplace | Snapshots are immutable; renaming = new snapshot.                               |
-| `snapshot_id`                         | int, computed                     | Hydrated by post-create `List` poll (the API does **not** return it on create). |
-| `display_name`, `state`, `created_at` | computed                          | From the `Snapshot` record.                                                     |
+| Attribute                             | Type                              | Notes                                                                                        |
+| ------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `id`                                  | string, computed                  | `<server_id>/<snapshot_id>`.                                                                 |
+| `server_id`                           | string, required, RequiresReplace | Owning server.                                                                               |
+| `name`                                | string, required, RequiresReplace | Snapshots are immutable; renaming = new snapshot.                                            |
+| `snapshot_id`                         | int, computed                     | Hydrated by post-create `List` poll (the client drops the create response's `meta.snap_id`). |
+| `display_name`, `state`, `created_at` | computed                          | From the `Snapshot` record.                                                                  |
 
-- **Create:** under `lockServer`, record existing `snap_id`s, call `Create(serverID, name)`, then poll `List` for the one new ID with that display name; several is an error. Matching by name alone would adopt an existing namesake, and destroy would delete it. Block until `State == completed` (bounded timeout) so downstream dependencies are safe.
+- **Create:** under `lockServer`, record existing `snap_id`s, call `Create(serverID, name)`, then poll `List` for the one new ID with that display name; several is an error. Matching by name alone would adopt an existing namesake, and destroy would delete it. Block until `State == completed` (bounded timeout) so downstream dependencies are safe; the lock is released once the ID is known. A pending snapshot that drops out of the list fails Create, since the API removes some without a failure state. One still pending at the deadline is kept in state with a warning.
 - **Read:** `List` and match by `snapshot_id`; remove from state if absent.
 - **Update:** none — every input is `RequiresReplace`.
-- **Delete:** `Delete(serverID, snapshotID)`.
+- **Delete:** `Delete(serverID, snapshotID)`. The API refuses an absent snapshot with 400, so a refusal succeeds when `List` confirms it is gone.
 - **Import:** by `<server_id>/<snapshot_id>`.
 
 ### 3.5 `gigahost_server_ipv4` — extra IP, order-only
@@ -279,7 +279,7 @@ These open questions block specific design points. Each is tagged with the decis
 
 **Snapshot (gates `gigahost_server_snapshot`):**
 
-- Confirm `POST /snapshot` returns no `snap_id` (requires post-create `List` poll).
+- ~~Confirm `POST /snapshot` returns no `snap_id`~~ — it returns `meta.snap_id`; the client does not surface it yet.
 - Are snapshot names unique per server? (Moot for correctness: Create diffs IDs rather than trusting the name.)
 - Typical create-to-`completed` time? (Sizes the Create polling timeout.)
 - Do snapshots survive `POST /servers/{id}/cancel`, or are they deleted with the server?

@@ -184,3 +184,139 @@ func TestParallelSnapshotCreatesOnOneServer(t *testing.T) {
 		t.Errorf("both resources adopted snapshot %q", ids[0])
 	}
 }
+
+// snapshotListJSON lists snapshot 7 in state, or nothing when state is "".
+func snapshotListJSON(state string) string {
+	if state == "" {
+		return `{"meta":{"status":200},"data":[]}`
+	}
+
+	return `{"meta":{"status":200},"data":[{"snap_id":"7","srv_id":"18404","snap_name":"rnd7",` +
+		`"snap_display_name":"nightly","snap_time":"1700000000","snap_state":"` + state + `"}]}`
+}
+
+// wireSnapshotLifecycle answers the n-th list call with states[n-1], and the
+// last entry for every call after. A create is accepted without an ID.
+func wireSnapshotLifecycle(h *harness, states ...string) {
+	h.api.Route(http.MethodGet, "/servers/18404/snapshots").
+		RespondWith(func(_ *http.Request, call int) (int, string) {
+			return http.StatusOK, snapshotListJSON(states[min(call, len(states))-1])
+		})
+
+	h.api.Route(http.MethodPost, "/servers/18404/snapshot").
+		RespondWith(func(_ *http.Request, _ int) (int, string) {
+			return http.StatusOK, `{"meta":{"status":200,"message":"Snapshot is currently being created."},"data":[]}`
+		})
+}
+
+// TestSnapshotCreateWaitsForCompletion: a pending snapshot is not yet usable,
+// so create returns only once it completes.
+func TestSnapshotCreateWaitsForCompletion(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		wireSnapshotLifecycle(h, "", "pending", "pending", "completed")
+
+		res := createSnapshot(h, "18404", "nightly")
+		if res.HasError() {
+			t.Fatalf("create: %s", res.ErrorText())
+		}
+
+		if got := str(res.State, "state"); got != "completed" {
+			t.Errorf("state = %s, want completed", got)
+		}
+	})
+}
+
+// TestSnapshotCreateFailsWhenSnapshotVanishes: the API drops some pending
+// snapshots from its list with no failure state. Create must say so rather
+// than report success for a snapshot that no longer exists.
+func TestSnapshotCreateFailsWhenSnapshotVanishes(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		wireSnapshotLifecycle(h, "", "pending", "pending", "")
+
+		res := createSnapshot(h, "18404", "nightly")
+		if !res.HasError() {
+			t.Fatalf("create succeeded with state %s for a snapshot that vanished", str(res.State, "state"))
+		}
+
+		if !strings.Contains(res.ErrorText(), "disappeared") {
+			t.Errorf("error %q does not say the snapshot disappeared", res.ErrorText())
+		}
+
+		if res.State != nil {
+			t.Errorf("vanished snapshot kept in state: %v", res.State)
+		}
+	})
+}
+
+// TestSnapshotCreateKeepsSlowSnapshot: a snapshot still pending at the
+// deadline exists and is ours, so it stays in state rather than leaking.
+func TestSnapshotCreateKeepsSlowSnapshot(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		h := newHarness(t)
+		wireSnapshotLifecycle(h, "", "pending")
+
+		res := createSnapshot(h, "18404", "nightly")
+		if res.HasError() {
+			t.Fatalf("create: %s", res.ErrorText())
+		}
+
+		if got := str(res.State, "snapshot_id"); got != "7" {
+			t.Errorf("snapshot_id = %s, want 7", got)
+		}
+
+		if !strings.Contains(res.WarningText(), "pending") {
+			t.Errorf("no warning that the snapshot is still pending: %q", res.WarningText())
+		}
+	})
+}
+
+// TestSnapshotDestroyAlreadyGone: the API refuses to delete a vanished
+// snapshot with a 400, not a 404. Destroy must still succeed, but only once
+// the list confirms it is gone.
+func TestSnapshotDestroyAlreadyGone(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name    string
+		listed  string
+		wantErr bool
+	}{
+		{"absent", "", false},
+		{"still listed", "completed", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			h := newHarness(t)
+			objType := h.resourceObjectType("gigahost_server_snapshot")
+
+			h.api.Route(http.MethodDelete, "/servers/18404/snapshot/7").
+				RespondWith(func(_ *http.Request, _ int) (int, string) {
+					return http.StatusBadRequest,
+						`{"meta":{"status":400,"message":"Unable to delete. Snapshot not found."},"data":[]}`
+				})
+			h.api.Route(http.MethodGet, "/servers/18404/snapshots").
+				RespondWith(func(_ *http.Request, _ int) (int, string) {
+					return http.StatusOK, snapshotListJSON(tc.listed)
+				})
+
+			state := mkObject(objType, map[string]tftypes.Value{
+				"id": tfStr("18404/7"), "server_id": tfStr("18404"), "name": tfStr("nightly"),
+				"snapshot_id": tfStr("7"), "state": tfStr("completed"),
+			})
+
+			res := h.apply("gigahost_server_snapshot", state, nullObject(objType), nullObject(objType))
+			if res.HasError() != tc.wantErr {
+				t.Errorf("destroy error = %q, want error %v", res.ErrorText(), tc.wantErr)
+			}
+		})
+	}
+}

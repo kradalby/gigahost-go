@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -23,13 +24,13 @@ var (
 )
 
 const (
-	snapshotAppearTimeout = 10 * time.Minute
+	snapshotCreateTimeout = 10 * time.Minute
 	snapshotPollInterval  = 10 * time.Second
 )
 
 // serverSnapshotResource manages a point-in-time snapshot of a server. A
 // snapshot is an immutable entity: changing any input replaces it (new
-// snapshot). Creating polls until the snapshot appears; the user-supplied name
+// snapshot). Creating polls until the snapshot completes; the user-supplied name
 // is stored by the API as the snapshot's display name (the API generates a
 // separate random internal name).
 type serverSnapshotResource struct {
@@ -118,7 +119,9 @@ func (r *serverSnapshotResource) Create(ctx context.Context, req resource.Create
 	serverID := plan.ServerID.ValueString()
 	name := plan.Name.ValueString()
 
-	defer lockServer(serverID)()
+	// The lock guards only the ID diff; completion is awaited without it.
+	unlock := sync.OnceFunc(lockServer(serverID))
+	defer unlock()
 
 	existing, err := r.client.Snapshots.List(ctx, serverID)
 	if err != nil {
@@ -134,12 +137,17 @@ func (r *serverSnapshotResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	snap, err := r.waitForSnapshot(ctx, serverID, name, snapshotIDSet(existing))
+	snap, err := r.waitForSnapshot(ctx, serverID, name, snapshotIDSet(existing), unlock)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to identify the new snapshot",
-			fmt.Sprintf("%v. The snapshot may exist; import it with `terraform import` once identified.", err))
+		resp.Diagnostics.AddError("Failed to create snapshot", err.Error())
 
 		return
+	}
+
+	if snap.State != gigahost.SnapshotStateCompleted {
+		resp.Diagnostics.AddWarning("Snapshot not yet completed",
+			fmt.Sprintf("snapshot %d on server %s is still %s after %s; refresh to follow it.",
+				snap.ID, serverID, snap.State, snapshotCreateTimeout))
 	}
 
 	r.setSnapshot(&plan, serverID, snap)
@@ -148,32 +156,67 @@ func (r *serverSnapshotResource) Create(ctx context.Context, req resource.Create
 }
 
 // waitForSnapshot polls the snapshot list until a snapshot absent from before
-// appears with the given display name.
+// appears with the given display name, calls identified, then follows that ID
+// until it completes. At the deadline it returns the snapshot as last seen.
 func (r *serverSnapshotResource) waitForSnapshot(
-	ctx context.Context, serverID, name string, before map[int64]bool,
+	ctx context.Context, serverID, name string, before map[int64]bool, identified func(),
 ) (*gigahost.Snapshot, error) {
-	ctx, cancel := context.WithTimeout(ctx, snapshotAppearTimeout)
+	ctx, cancel := context.WithTimeout(ctx, snapshotCreateTimeout)
 	defer cancel()
 
 	ticker := time.NewTicker(snapshotPollInterval)
 	defer ticker.Stop()
 
+	var seen *gigahost.Snapshot
+
 	for {
 		snaps, err := r.client.Snapshots.List(ctx, serverID)
 		if err == nil {
-			snap, err := newSnapshot(before, snaps, name)
-			if err != nil || snap != nil {
-				return snap, err
+			var snap *gigahost.Snapshot
+
+			if seen == nil {
+				if snap, err = newSnapshot(before, snaps, name); err != nil {
+					return nil, err
+				}
+			} else if snap = snapshotByID(snaps, seen.ID); snap == nil {
+				// The API drops some snapshots from the list with no failure state.
+				return nil, fmt.Errorf("snapshot %d on server %s disappeared while %s; the API gave no reason",
+					seen.ID, serverID, seen.State)
+			}
+
+			if snap != nil {
+				if snap.State == gigahost.SnapshotStateCompleted {
+					return snap, nil
+				}
+
+				seen = snap
+
+				identified()
 			}
 		}
 
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("snapshot %q was not listed on server %s within %s",
-				name, serverID, snapshotAppearTimeout)
+			if seen != nil {
+				return seen, nil
+			}
+
+			return nil, fmt.Errorf("snapshot %q was not listed on server %s within %s. It may exist; "+
+				"import it with `terraform import` once identified", name, serverID, snapshotCreateTimeout)
 		case <-ticker.C:
 		}
 	}
+}
+
+// snapshotByID returns the snapshot with id, or nil when it is not listed.
+func snapshotByID(snaps []gigahost.Snapshot, id int64) *gigahost.Snapshot {
+	for i := range snaps {
+		if snaps[i].ID == id {
+			return &snaps[i]
+		}
+	}
+
+	return nil
 }
 
 // snapshotIDSet returns the set of snapshot IDs in a list.
@@ -288,11 +331,20 @@ func (r *serverSnapshotResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	if err := r.client.Snapshots.Delete(ctx, state.ServerID.ValueString(), snapID); err != nil {
-		resp.Diagnostics.AddError("Failed to delete snapshot", err.Error())
+	serverID := state.ServerID.ValueString()
 
+	err = r.client.Snapshots.Delete(ctx, serverID, snapID)
+	if err == nil || gigahost.IsNotFound(err) {
 		return
 	}
+
+	// A snapshot that is already gone is refused with a 400, not a 404.
+	if snaps, listErr := r.client.Snapshots.List(ctx, serverID); gigahost.IsNotFound(listErr) ||
+		(listErr == nil && snapshotByID(snaps, snapID) == nil) {
+		return
+	}
+
+	resp.Diagnostics.AddError("Failed to delete snapshot", err.Error())
 }
 
 // ImportState supports `terraform import ... SERVER_ID/SNAPSHOT_ID`.
