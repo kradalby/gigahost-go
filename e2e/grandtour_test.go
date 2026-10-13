@@ -79,7 +79,7 @@ func TestGrandTour(t *testing.T) {
 	if err := c.Servers.UpdateName(ctx, serverID, newLabel); err != nil {
 		t.Errorf("[rename] UpdateName: %v", err)
 	} else if srv, gerr := c.Servers.Get(ctx, serverID); gerr == nil {
-		t.Logf("[rename] label now %q (in-place, no rebuild)", srv.Label)
+		t.Logf("[rename] name now %q (in-place, no rebuild)", srv.Name)
 	}
 
 	// ---- reverse DNS on primary IPv4 ----

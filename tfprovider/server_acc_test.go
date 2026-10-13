@@ -13,8 +13,8 @@ import (
 // Server Name
 // ---------------------------------------------------------------------------
 
-// TestAccServerName_basic sets a descriptive label on an existing server,
-// updates it, then destroys (which resets the label to the server hostname).
+// TestAccServerName_basic sets the control-panel name on an existing server,
+// updates it, then destroys (which resets the name to the server label).
 // Requires GIGAHOST_TEST_SERVER_ID.
 func TestAccServerName_basic(t *testing.T) {
 	serverID := testAccRequireEnv(t, "GIGAHOST_TEST_SERVER_ID")
@@ -25,21 +25,7 @@ func TestAccServerName_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProviderFactories,
-		CheckDestroy: func(_ *terraform.State) error {
-			// After destroy, the label should have been reset to the hostname.
-			// We can't know the hostname here, but we can verify it's no
-			// longer set to either of the names we applied.
-			srv, err := client.Servers.Get(accCtx, serverID)
-			if err != nil {
-				return fmt.Errorf("CheckDestroy: get server: %w", err)
-			}
-
-			if srv.Label == name1 || srv.Label == name2 {
-				return fmt.Errorf("server label %q still matches applied name after destroy", srv.Label)
-			}
-
-			return nil
-		},
+		CheckDestroy:             testAccCheckServerNameReverted(client, serverID),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccServerNameConfig(serverID, name1),

@@ -218,7 +218,7 @@ func TestAccFullServerLifecycle(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testAccCheckDNSZoneDestroyed(client, zoneName),
-			testAccCheckServerNameReverted(client, serverID, name1, name2),
+			testAccCheckServerNameReverted(client, serverID),
 			testAccCheckServerRDNSCleared(client, serverID, ipID, dns),
 		),
 		Steps: []resource.TestStep{
@@ -297,19 +297,17 @@ func testAccCheckSSHKeyNameDestroyed(client *gigahost.Client, name string) resou
 	}
 }
 
-// testAccCheckServerNameReverted fails if the server label still matches any of
-// the applied names (implying the Delete logic failed to reset it).
-func testAccCheckServerNameReverted(client *gigahost.Client, serverID string, names ...string) resource.TestCheckFunc {
+// testAccCheckServerNameReverted fails unless destroy reset the server name to
+// its Gigahost-assigned label.
+func testAccCheckServerNameReverted(client *gigahost.Client, serverID string) resource.TestCheckFunc {
 	return func(_ *terraform.State) error {
 		srv, err := client.Servers.Get(accCtx, serverID)
 		if err != nil {
 			return fmt.Errorf("CheckDestroy: get server: %w", err)
 		}
 
-		for _, n := range names {
-			if srv.Label == n {
-				return fmt.Errorf("server label %q still matches applied name %q after destroy", srv.Label, n)
-			}
+		if srv.Name != srv.Label {
+			return fmt.Errorf("server name %q after destroy, want label %q", srv.Name, srv.Label)
 		}
 
 		return nil

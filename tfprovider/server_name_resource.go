@@ -20,9 +20,7 @@ var (
 	_ resource.ResourceWithImportState = (*serverNameResource)(nil)
 )
 
-// serverNameResource sets the human-readable label ("name") on a
-// server. Servers themselves cannot be created via the API; this is
-// the one mutable attribute on an existing server.
+// serverNameResource manages a server's control-panel name (srv_name).
 type serverNameResource struct {
 	client *gigahost.Client
 }
@@ -44,8 +42,9 @@ func (r *serverNameResource) Metadata(_ context.Context, req resource.MetadataRe
 // Schema returns the Terraform schema.
 func (r *serverNameResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Sets the descriptive label on an existing server. " +
-			"Destroying this resource resets the label to the server's auto-generated hostname.",
+		MarkdownDescription: "Sets the control-panel name of an existing server. It does not change " +
+			"the hostname inside the operating system. Destroying this resource resets the name to the " +
+			"Gigahost-assigned label (`srvN.gigahost.no`), because the API rejects an empty name.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Alias of `server_id` to satisfy the Terraform resource model.",
@@ -58,7 +57,7 @@ func (r *serverNameResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Descriptive name / label for the server.",
+				MarkdownDescription: "Control-panel name for the server.",
 				Required:            true,
 			},
 		},
@@ -81,7 +80,7 @@ func (r *serverNameResource) Configure(_ context.Context, req resource.Configure
 	r.client = client
 }
 
-// Create applies the label.
+// Create applies the name.
 func (r *serverNameResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan serverNameModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -101,7 +100,7 @@ func (r *serverNameResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-// Read refreshes the label.
+// Read refreshes the name.
 func (r *serverNameResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state serverNameModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -123,12 +122,12 @@ func (r *serverNameResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	state.Name = types.StringValue(srv.Label)
+	state.Name = types.StringValue(srv.Name)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-// Update applies the new label.
+// Update applies the new name.
 func (r *serverNameResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan serverNameModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -148,7 +147,8 @@ func (r *serverNameResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-// Delete resets the label to the server's hostname.
+// Delete resets the name to the Gigahost-assigned label; the API cannot unset
+// a name.
 func (r *serverNameResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state serverNameModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -160,10 +160,21 @@ func (r *serverNameResource) Delete(ctx context.Context, req resource.DeleteRequ
 	srv, err := r.client.Servers.Get(ctx, state.ServerID.ValueString())
 	if err != nil {
 		// Server gone, nothing to revert.
+		if gigahost.IsNotFound(err) {
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to read server", err.Error())
+
 		return
 	}
 
-	if err := r.client.Servers.UpdateName(ctx, state.ServerID.ValueString(), srv.Hostname); err != nil {
+	// No label to restore and an empty name is rejected, so only drop state.
+	if srv.Label == "" {
+		return
+	}
+
+	if err := r.client.Servers.UpdateName(ctx, state.ServerID.ValueString(), srv.Label); err != nil {
 		resp.Diagnostics.AddError("Failed to revert server name", err.Error())
 
 		return

@@ -59,7 +59,7 @@ func (d *serversDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 					Attributes: map[string]schema.Attribute{
 						"id":         schema.StringAttribute{MarkdownDescription: "Unique identifier.", Computed: true},
 						"hostname":   schema.StringAttribute{MarkdownDescription: "Hostname configured on the server.", Computed: true},
-						"label":      schema.StringAttribute{MarkdownDescription: "User-assigned label.", Computed: true},
+						"label":      schema.StringAttribute{MarkdownDescription: "Gigahost-assigned label (`srvN.gigahost.no`); `gigahost_server_name` does not change it.", Computed: true},
 						"type":       schema.StringAttribute{MarkdownDescription: "Server type reported by the API.", Computed: true},
 						"vps_type":   schema.StringAttribute{MarkdownDescription: "Virtualisation type reported by the API.", Computed: true},
 						"location":   schema.StringAttribute{MarkdownDescription: "Datacentre location reported by the API.", Computed: true},

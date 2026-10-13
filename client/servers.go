@@ -118,9 +118,14 @@ func (ip *ServerIP) UnmarshalJSON(data []byte) error {
 // change meaning depending on whether the server is a VPS or
 // dedicated box; the fields here are those consistently documented.
 type Server struct {
-	ID         string
-	Label      string
-	Hostname   string
+	ID string
+	// Label (srv_label) is Gigahost-assigned, e.g. "srvN.gigahost.no";
+	// UpdateName never changes it.
+	Label string
+	// Hostname (srv_hostname) is often empty on the live API.
+	Hostname string
+	// Name (srv_name) is the control-panel name that UpdateName sets. It
+	// holds the deploy hostname, or Label when none was given.
 	Name       string
 	Type       string
 	VPSType    string
@@ -290,7 +295,7 @@ func (s *ServersService) Get(ctx context.Context, serverID string) (*Server, err
 	return &wrapped[0], nil
 }
 
-// UpdateName sets the descriptive name (label) of a server.
+// UpdateName sets srv_name ([Server.Name]). The API rejects an empty name.
 func (s *ServersService) UpdateName(ctx context.Context, serverID, name string) error {
 	if serverID == "" {
 		return errors.New("gigahost: UpdateName: serverID is empty")
