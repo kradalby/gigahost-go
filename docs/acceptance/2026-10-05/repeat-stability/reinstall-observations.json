@@ -1,0 +1,148 @@
+[
+  {
+    "case": "round-02/suite/TestAccServerOSChangeMatrix",
+    "server_id": "18905",
+    "requested_at": "2026-10-05T15:05:34.002433913Z",
+    "request": {
+      "timezone": "Europe/Oslo",
+      "hostname": "",
+      "ssh_keys": [
+        "2974"
+      ],
+      "os_id": "101",
+      "language": "en_US",
+      "keyboard": "us"
+    },
+    "before": {
+      "at": "2026-10-05T15:05:32.112799486Z",
+      "srv_id": "18905",
+      "os_id": "108",
+      "srv_status": true,
+      "srv_status_install": false,
+      "srv_hostname": ""
+    },
+    "transport_error": "context canceled",
+    "error_at": "2026-10-05T15:06:34.003263676Z",
+    "response_wait_seconds": 60.001
+  },
+  {
+    "case": "round-03/suite/TestAccServerOSChangeMatrix",
+    "server_id": "18925",
+    "requested_at": "2026-10-05T16:00:07.71560726Z",
+    "request": {
+      "ssh_keys": [
+        "2982"
+      ],
+      "os_id": "101",
+      "language": "en_US",
+      "keyboard": "us",
+      "timezone": "Europe/Oslo",
+      "hostname": ""
+    },
+    "before": {
+      "at": "2026-10-05T16:00:05.861470499Z",
+      "srv_id": "18925",
+      "os_id": "108",
+      "srv_status": true,
+      "srv_status_install": false,
+      "srv_hostname": ""
+    },
+    "transport_error": "context canceled",
+    "error_at": "2026-10-05T16:01:07.71586871Z",
+    "response_wait_seconds": 60.0
+  },
+  {
+    "case": "round-03/suite/TestAccServerOSChangeWithHostname",
+    "server_id": "18926",
+    "requested_at": "2026-10-05T16:03:47.454496318Z",
+    "request": {
+      "language": "en_US",
+      "keyboard": "us",
+      "timezone": "Europe/Oslo",
+      "hostname": "tf-acc-oschange-070837.example.com",
+      "ssh_keys": [
+        "2983"
+      ],
+      "os_id": "101"
+    },
+    "before": {
+      "at": "2026-10-05T16:03:45.360020631Z",
+      "srv_id": "18926",
+      "os_id": "108",
+      "srv_status": true,
+      "srv_status_install": false,
+      "srv_hostname": ""
+    },
+    "transport_error": "context canceled",
+    "error_at": "2026-10-05T16:04:47.454366923Z",
+    "response_wait_seconds": 60.0
+  },
+  {
+    "case": "round-04/suite/TestAccServerOSChangeWithHostname",
+    "server_id": "18930",
+    "requested_at": "2026-10-05T16:25:35.652049286Z",
+    "request": {
+      "timezone": "Europe/Oslo",
+      "hostname": "tf-acc-oschange-233412.example.com",
+      "ssh_keys": [
+        "2987"
+      ],
+      "os_id": "101",
+      "language": "en_US",
+      "keyboard": "us"
+    },
+    "before": {
+      "at": "2026-10-05T16:25:33.71849504Z",
+      "srv_id": "18930",
+      "os_id": "108",
+      "srv_status": true,
+      "srv_status_install": false,
+      "srv_hostname": ""
+    },
+    "transport_error": "context canceled",
+    "error_at": "2026-10-05T16:26:35.653083155Z",
+    "response_wait_seconds": 60.001,
+    "after_error": {
+      "at": "2026-10-05T16:26:35.778616785Z",
+      "srv_id": "18930",
+      "os_id": "101",
+      "srv_status": true,
+      "srv_status_install": true,
+      "srv_hostname": ""
+    }
+  },
+  {
+    "case": "round-05/suite/TestAccServerOSChangeWithHostname",
+    "server_id": "18933",
+    "requested_at": "2026-10-05T16:44:43.604670296Z",
+    "request": {
+      "hostname": "tf-acc-oschange-257614.example.com",
+      "ssh_keys": [
+        "2990"
+      ],
+      "os_id": "101",
+      "language": "en_US",
+      "keyboard": "us",
+      "timezone": "Europe/Oslo"
+    },
+    "before": {
+      "at": "2026-10-05T16:44:41.565815867Z",
+      "srv_id": "18933",
+      "os_id": "108",
+      "srv_status": true,
+      "srv_status_install": false,
+      "srv_hostname": ""
+    },
+    "transport_error": "context canceled",
+    "error_at": "2026-10-05T16:45:43.60557203Z",
+    "response_wait_seconds": 60.001,
+    "after_error": {
+      "at": "2026-10-05T16:45:43.737192524Z",
+      "srv_id": "18933",
+      "os_id": "101",
+      "srv_status": true,
+      "srv_status_install": true,
+      "srv_hostname": ""
+    }
+  }
+]

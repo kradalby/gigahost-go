@@ -1,0 +1,447 @@
+{
+  "TestAccServerFixture/TestAccServerIPv4": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccImportOOB_Server": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerFixture": {
+    "pass": 0,
+    "fail": 6,
+    "skip": 0
+  },
+  "TestAccServer_perOS/debian-12/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/almalinux-10/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS/rockylinux-9/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS/ubuntu-26.04/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/ubuntu-24.04/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/almalinux-10/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS/rockylinux-9/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS/debian-13/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/ubuntu-26.04/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/debian-13/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/ubuntu-24.04/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/debian-12/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServer_perOS/fedora-43-server/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS/fedora-43-server/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServer_perOS": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccSSHKey_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccAPIKey_basic": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccAPIKey_updateLabel": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccAPIKey_withPermissions": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccAPIKey_withExpiry": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccSSHKeyAndAPIKey": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccDNSZoneDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSZonesDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServersDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccBGPDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSZone_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_A": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_AAAA": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_CNAME": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_MX": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_TXT": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecord_multipleInZone": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRedirect_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSDNSSEC": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccDNSNameservers": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccDNSExternalDSRecords": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccDNSPTRZone": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccBGPASN": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccBGPSession": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerIPv4": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSZone": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_DNSZoneByName": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_DNSZoneImportBlock": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_AccountSSHKey": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_AccountAPIKey": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_BGPASN": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_BGPASNPrefixed": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_BGPSession": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSRecord": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_DNSRedirect": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccImportOOB_DNSSEC": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSNameservers": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSExternalDS": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSPTRZone": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_DNSPTRZoneByName": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_ServerName": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_ServerRDNS": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_ServerSnapshot": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccImportOOB_Server": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccAccountDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccOperatingSystemsDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerSizesDataSources": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccSSHAndDNS": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccFullServerLifecycle": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerCatalogDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerSizeDataSourceCategory": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccSSHKeysDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccDNSRecordsDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerName_basic": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerRDNS_IPv4": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerNameAndReverse": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerWithDNSRecord": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServer_deployAndSSH": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccServerName_basic": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccServerRDNS_IPv4": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccServerNameAndReverse": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccServerWithDNSRecord": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccFullServerLifecycle": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccImportOOB_ServerName": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccImportOOB_ServerRDNS": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccImportOOB_ServerSnapshot": {
+    "pass": 1,
+    "fail": 4,
+    "skip": 0
+  },
+  "TestAccServerIPv4_deploy": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3
+  },
+  "TestAccServerOSChangeMatrix": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerSnapshot": {
+    "pass": 2,
+    "fail": 1,
+    "skip": 0
+  },
+  "TestAccServerFixture/TestAccServerIPv4_deploy": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  },
+  "TestAccServerOSChangeWithHostname": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0
+  }
+}

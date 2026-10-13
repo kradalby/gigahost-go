@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-05T15:25:57.193382+00:00",
+  "tracked_patch": "sources/20261005T152557Z.patch",
+  "sha256": "1c2a06280aa016bfab8c03f28b6ead0aea88348a9190a7fe1e977967ff30a896",
+  "untracked_files": {
+    "scripts/test-acc-repeat.py": "bdad58cd4e189ab677fe0061a3216fc35c0e9849ab45aba3a22088b135aaf853",
+    "tfprovider/server_fixture_acc_test.go": "c071865ffaac223bfa757362fb5440c519edc49e31a1eca31407fae54ab39ccd"
+  },
+  "scope": "acceptance test diagnostics and condition-based waiting only; production unchanged",
+  "comparison_note": "Third suite adds explicit-hostname reinstall and disposable IPv4 deployment, and waits for asynchronous snapshot deletion. The next two focused trials repeat those cases after the matrix finishes. Existing matrix acceptance criteria unchanged."
+}

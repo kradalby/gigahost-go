@@ -1,0 +1,1694 @@
+{
+  "TestAccServerIPv4": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 0.45
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 0.48
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 0.42
+      }
+    ]
+  },
+  "TestAccImportOOB_Server": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 160.83
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 156.15
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 160.65
+      }
+    ]
+  },
+  "TestAccServer_perOS/debian-12/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 269.36
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 314.69
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 310.69
+      }
+    ]
+  },
+  "TestAccServer_perOS/almalinux-10/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 501.9
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 502.37
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 522.37
+      }
+    ]
+  },
+  "TestAccServer_perOS/rockylinux-9/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 582.13
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 582.54
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 582.1
+      }
+    ]
+  },
+  "TestAccServer_perOS/ubuntu-26.04/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2339.91
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 409.79
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 409.66
+      }
+    ]
+  },
+  "TestAccServer_perOS/ubuntu-24.04/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2389.73
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 417.86
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 419.53
+      }
+    ]
+  },
+  "TestAccServer_perOS/almalinux-10/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 1112.14
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 502.21
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 492.12
+      }
+    ]
+  },
+  "TestAccServer_perOS/rockylinux-9/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 2552.39
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 582.18
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 572.33
+      }
+    ]
+  },
+  "TestAccServer_perOS/debian-13/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 234.45
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 239.53
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 227.75
+      }
+    ]
+  },
+  "TestAccServer_perOS/ubuntu-26.04/key": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 381.98
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 382.23
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 399.52
+      }
+    ]
+  },
+  "TestAccServer_perOS/debian-13/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 216.65
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 214.27
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 214.4
+      }
+    ]
+  },
+  "TestAccServer_perOS/ubuntu-24.04/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 399.36
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 399.58
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 399.91
+      }
+    ]
+  },
+  "TestAccServer_perOS/debian-12/password": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 279.21
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 259.04
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 269.25
+      }
+    ]
+  },
+  "TestAccServer_perOS/fedora-43-server/password": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 421.98
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 432.34
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 432.42
+      }
+    ]
+  },
+  "TestAccServer_perOS/fedora-43-server/key": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 432.04
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 402.3
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 432.2
+      }
+    ]
+  },
+  "TestAccSSHKey_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 1.5
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 1.52
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 1.48
+      }
+    ]
+  },
+  "TestAccAPIKey_basic": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.1
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.12
+      }
+    ]
+  },
+  "TestAccAPIKey_updateLabel": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.17
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.1
+      }
+    ]
+  },
+  "TestAccAPIKey_withPermissions": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.14
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.1
+      }
+    ]
+  },
+  "TestAccAPIKey_withExpiry": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.12
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.09
+      }
+    ]
+  },
+  "TestAccSSHKeyAndAPIKey": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.16
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.11
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.1
+      }
+    ]
+  },
+  "TestAccDNSZoneDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.06
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 22.09
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 22.15
+      }
+    ]
+  },
+  "TestAccDNSZonesDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 23.96
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 23.8
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 21.95
+      }
+    ]
+  },
+  "TestAccServersDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 1.22
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 1.08
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 1.1
+      }
+    ]
+  },
+  "TestAccBGPDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 0.87
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 0.78
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 0.82
+      }
+    ]
+  },
+  "TestAccDNSZone_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.6
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.55
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 24.39
+      }
+    ]
+  },
+  "TestAccDNSRecord_A": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 23.88
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 23.96
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 23.48
+      }
+    ]
+  },
+  "TestAccDNSRecord_AAAA": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 22.17
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.15
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 23.97
+      }
+    ]
+  },
+  "TestAccDNSRecord_CNAME": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 22.08
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 22.1
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 23.98
+      }
+    ]
+  },
+  "TestAccDNSRecord_MX": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 25.44
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 23.33
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 25.19
+      }
+    ]
+  },
+  "TestAccDNSRecord_TXT": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.03
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.15
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 21.92
+      }
+    ]
+  },
+  "TestAccDNSRecord_multipleInZone": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 25.17
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 25.1
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 23.2
+      }
+    ]
+  },
+  "TestAccDNSRedirect_basic": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.35
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.5
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 24.36
+      }
+    ]
+  },
+  "TestAccDNSDNSSEC": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccDNSNameservers": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccDNSExternalDSRecords": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccDNSPTRZone": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccBGPASN": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccBGPSession": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSZone": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 22.32
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 22.3
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 22.4
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSZoneByName": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.52
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.55
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 24.33
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSZoneImportBlock": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 21.44
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 21.4
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 21.38
+      }
+    ]
+  },
+  "TestAccImportOOB_AccountSSHKey": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 1.79
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 1.93
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 1.59
+      }
+    ]
+  },
+  "TestAccImportOOB_AccountAPIKey": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0.12
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0.14
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0.11
+      }
+    ]
+  },
+  "TestAccImportOOB_BGPASN": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_BGPASNPrefixed": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_BGPSession": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSRecord": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.76
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.64
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 22.64
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSRedirect": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 23.07
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 23.07
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 25.25
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSSEC": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSNameservers": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSExternalDS": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSPTRZone": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_DNSPTRZoneByName": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 3,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      }
+    ]
+  },
+  "TestAccImportOOB_ServerName": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 1.58
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 1.19
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 1.36
+      }
+    ]
+  },
+  "TestAccImportOOB_ServerRDNS": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 0.21
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 0.17
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 0.17
+      }
+    ]
+  },
+  "TestAccImportOOB_ServerSnapshot": {
+    "pass": 1,
+    "fail": 4,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 605.52
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 51.95
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 82.24
+      },
+      {
+        "round": "round-04",
+        "outcome": "fail",
+        "elapsed_seconds": 600.4
+      },
+      {
+        "round": "round-05",
+        "outcome": "fail",
+        "elapsed_seconds": 600.36
+      }
+    ]
+  },
+  "TestAccAccountDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 0.8
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 0.76
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 0.79
+      }
+    ]
+  },
+  "TestAccOperatingSystemsDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2.74
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 2.65
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 2.55
+      }
+    ]
+  },
+  "TestAccServerSizesDataSources": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2.21
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 2.24
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 2.29
+      }
+    ]
+  },
+  "TestAccSSHAndDNS": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 23.16
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 26.91
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 25.17
+      }
+    ]
+  },
+  "TestAccFullServerLifecycle": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 23.58
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 21.44
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 21.38
+      }
+    ]
+  },
+  "TestAccServerCatalogDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2.25
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 2.05
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 2.12
+      }
+    ]
+  },
+  "TestAccServerSizeDataSourceCategory": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 2.38
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 2.08
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 2.25
+      }
+    ]
+  },
+  "TestAccSSHKeysDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 0.77
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 0.66
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 0.82
+      }
+    ]
+  },
+  "TestAccDNSRecordsDataSource": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.55
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 24.51
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 22.52
+      }
+    ]
+  },
+  "TestAccServerName_basic": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 0.94
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 0.88
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 0.98
+      }
+    ]
+  },
+  "TestAccServerRDNS_IPv4": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 0.39
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 0.32
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 0.32
+      }
+    ]
+  },
+  "TestAccServerNameAndReverse": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 0.63
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 0.56
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 0.64
+      }
+    ]
+  },
+  "TestAccServerWithDNSRecord": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 24.1
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 21.77
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 22.02
+      }
+    ]
+  },
+  "TestAccServer_deployAndSSH": {
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "pass",
+        "elapsed_seconds": 222.81
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 217.9
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 221.27
+      }
+    ]
+  },
+  "TestAccServerIPv4_deploy": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 2,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-02",
+        "outcome": "skip",
+        "elapsed_seconds": 0
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 153.15
+      },
+      {
+        "round": "round-04",
+        "outcome": "fail",
+        "elapsed_seconds": 173.36
+      },
+      {
+        "round": "round-05",
+        "outcome": "fail",
+        "elapsed_seconds": 163.51
+      }
+    ]
+  },
+  "TestAccServerOSChangeMatrix": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 902.79
+      },
+      {
+        "round": "round-02",
+        "outcome": "fail",
+        "elapsed_seconds": 228.43
+      },
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 228.8
+      }
+    ]
+  },
+  "TestAccServerSnapshot": {
+    "pass": 2,
+    "fail": 1,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-01",
+        "outcome": "fail",
+        "elapsed_seconds": 175.77
+      },
+      {
+        "round": "round-02",
+        "outcome": "pass",
+        "elapsed_seconds": 155.6
+      },
+      {
+        "round": "round-03",
+        "outcome": "pass",
+        "elapsed_seconds": 155.36
+      }
+    ]
+  },
+  "TestAccServerOSChangeWithHostname": {
+    "pass": 0,
+    "fail": 3,
+    "skip": 0,
+    "trials": [
+      {
+        "round": "round-03",
+        "outcome": "fail",
+        "elapsed_seconds": 219.76
+      },
+      {
+        "round": "round-04",
+        "outcome": "fail",
+        "elapsed_seconds": 218.51
+      },
+      {
+        "round": "round-05",
+        "outcome": "fail",
+        "elapsed_seconds": 228.51
+      }
+    ]
+  }
+}

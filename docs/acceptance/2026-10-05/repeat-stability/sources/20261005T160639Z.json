@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-05T16:06:39.893713+00:00",
+  "tracked_patch": "sources/20261005T160639Z.patch",
+  "sha256": "0a8632414d86d44c6266fc02bdf6c87899fcb8f16a3461ab3dace0fd4b89e1fb",
+  "scope": "Focused-trial failure observation and reporting; runtime unchanged",
+  "untracked_files": {
+    "scripts/test-acc-repeat.py": "5efa798f90254690d6764bee35c9c66e197feaece0889b201d62251e5db1ef5c",
+    "tfprovider/server_fixture_acc_test.go": "370c6f9c6d1c71cff47e5416b892f372beee689e5c1cf8a33837689646f3bc5d"
+  },
+  "comparison_note": "Final two focused hostname trials additionally perform a bounded read of their own server after any failure. Acceptance assertions, runtime timeout and cleanup are unchanged. Summaries now link cleanup to initial VM ID and include SSH milestone timestamps."
+}

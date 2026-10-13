@@ -1,0 +1,245 @@
+{
+  "requested_scope": "All running servers in the Gigahost test account, including previously retained debugging VMs",
+  "client": "gigahost-go Servers.Cancel",
+  "before": [
+    {
+      "server_id": "18884",
+      "name": "srv18884.gigahost.no",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18879",
+      "name": "tf-acc-os-matrix-930893",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18878",
+      "name": "tf-acc-os-matrix-290105",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18871",
+      "name": "tf-acc-os-matrix-031483",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18870",
+      "name": "tf-acc-os-matrix-048145",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18867",
+      "name": "tf-acc-os-matrix-797299",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18866",
+      "name": "tf-acc-os-matrix-224097",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18858",
+      "name": "tf-acc-os-matrix-917795",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18854",
+      "name": "tf-acc-os-matrix-537712",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18853",
+      "name": "tf-acc-os-matrix-904376",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18852",
+      "name": "tf-acc-os-matrix-745376",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18849",
+      "name": "tf-acc-os-matrix-288922",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18848",
+      "name": "tf-acc-os-matrix-037794",
+      "running": true,
+      "installing": false
+    },
+    {
+      "server_id": "18846",
+      "name": "tf-acc-os-matrix-997175",
+      "running": true,
+      "installing": false
+    }
+  ],
+  "cancellations": [
+    {
+      "server_id": "18884",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18879",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18878",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18871",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18870",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18867",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18866",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18858",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18854",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18853",
+      "accepted_at": "2026-10-09T08:29:42Z"
+    },
+    {
+      "server_id": "18852",
+      "accepted_at": "2026-10-09T08:29:43Z"
+    },
+    {
+      "server_id": "18849",
+      "accepted_at": "2026-10-09T08:29:43Z"
+    },
+    {
+      "server_id": "18848",
+      "accepted_at": "2026-10-09T08:29:43Z"
+    },
+    {
+      "server_id": "18846",
+      "accepted_at": "2026-10-09T08:29:43Z"
+    }
+  ],
+  "active_server_observations": [
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:29:43Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:29:48Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:29:53Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:29:58Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:04Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:09Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:14Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:19Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:24Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:30Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:35Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:40Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:45Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:51Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:30:56Z"
+    },
+    {
+      "count": 14,
+      "observed_at": "2026-10-09T08:31:01Z"
+    },
+    {
+      "count": 8,
+      "observed_at": "2026-10-09T08:31:06Z"
+    },
+    {
+      "count": 6,
+      "observed_at": "2026-10-09T08:31:11Z"
+    },
+    {
+      "count": 5,
+      "observed_at": "2026-10-09T08:31:16Z"
+    },
+    {
+      "count": 3,
+      "observed_at": "2026-10-09T08:31:21Z"
+    },
+    {
+      "count": 3,
+      "observed_at": "2026-10-09T08:31:27Z"
+    },
+    {
+      "count": 1,
+      "observed_at": "2026-10-09T08:31:32Z"
+    },
+    {
+      "count": 0,
+      "observed_at": "2026-10-09T08:31:37Z"
+    }
+  ],
+  "cancellation_errors": 0,
+  "ssh_keys_deleted": [],
+  "acceptance_evidence_preserved": true
+}

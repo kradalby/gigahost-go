@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-10-05T16:38:10.276017+00:00",
+  "commit": "c12196b89badfacbaa602059261310f6c73cbf89",
+  "checks": [
+    {
+      "command": "env -u TF_ACC -u GIGAHOST_TOKEN CGO_ENABLED=1 go test -race -count=3 ./...",
+      "outcome": "passed",
+      "scope": "Full offline suite before later acceptance-only instrumentation edits"
+    },
+    {
+      "command": "env -u TF_ACC -u GIGAHOST_TOKEN CGO_ENABLED=1 go test -race -count=3 ./tfprovider",
+      "outcome": "passed",
+      "scope": "After latest Go acceptance instrumentation edits"
+    },
+    {
+      "command": "golangci-lint run",
+      "outcome": "passed",
+      "scope": "After latest Go edits"
+    },
+    {
+      "command": "nixfmt --check flake.nix",
+      "outcome": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "outcome": "passed"
+    },
+    {
+      "check": "Unresolved Git index conflicts",
+      "outcome": "none"
+    },
+    {
+      "check": "Production client/CLI/provider diff",
+      "outcome": "none"
+    },
+    {
+      "check": "Timing reconciliation",
+      "outcome": "All 42 fresh matrix cases reconcile allocation, API readiness and SSH milestones"
+    },
+    {
+      "check": "Known credentials / secret fields / private key export rejection",
+      "outcome": "passed on plain, JSON-escaped and key-block examples"
+    }
+  ]
+}

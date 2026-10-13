@@ -1,0 +1,6 @@
+{
+  "at": "20261005T145705Z",
+  "sha256": "89d08f9df85a13c8190d2ec69fad06c2f5e1cc94017a9c600588882f1f6881de",
+  "scope": "test-only failure cleanup scoped by newly created order IDs; exact SSH state password saved privately; recursive server timing summaries",
+  "applies_to": "Round 3 matrix/suite. Round 2 suite compiled before the cleanup backstop addition; audit its cleanup separately."
+}

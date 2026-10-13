@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-05T14:24:31.274176+00:00",
+  "tracked_patch": "sources/20261005T142431Z.patch",
+  "sha256": "48ec10248c8d579eceec1832d6e7337c78300660f81a750277bb5ff44d5124d8",
+  "untracked_sha256": {
+    "scripts/test-acc-repeat.py": "116018bc16c12dfcc7d002372e97fcbd70b4375ae2ab3324e58d68bd49c2d497",
+    "tfprovider/server_fixture_acc_test.go": "9ef897e568d17cf7454ce340a6b2d77e23a287460efe63be9f0ae2484d9c10a6"
+  },
+  "notes": [
+    "Production client/provider code unchanged.",
+    "Round-one suite used the original fixture list and lacked suite API recording.",
+    "Focused round-one fixture supplement adds disposable IPv4 and CLI server import; those subtests also execute within rounds two and three.",
+    "Suite recording adds bounded CLI test execution and cleanup of an assigned CLI VM when the CLI wait fails."
+  ]
+}

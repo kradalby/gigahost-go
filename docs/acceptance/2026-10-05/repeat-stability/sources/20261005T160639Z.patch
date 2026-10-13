@@ -1,0 +1,1273 @@
+diff --git a/README.md b/README.md
+index ab8d10d..d8b42ce 100644
+--- a/README.md
++++ b/README.md
+@@ -176,7 +176,7 @@ GIGAHOST_TEST_MATRIX_DIR="$matrix_dir" direnv exec . nix develop --command sh -c
+   export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
+   export GIGAHOST_TEST_DEPLOY_TYPE=performance
+   export GIGAHOST_TEST_DEPLOY_SIZE=2c-4gb-40gb
+-  go test -json -count=1 -timeout 2h -parallel 4 ./tfprovider \
++  go test -json -count=1 -timeout 4h -parallel 4 ./tfprovider \
+     -run "^TestAccServer_perOS$"
+ ' > "$matrix_dir/events.jsonl"
+ 
+@@ -188,6 +188,10 @@ jq -r '
+ ```
+ 
+ `-parallel 1` runs serially. Add `/debian-13/key` to `-run` to rerun one cell.
++The matrix uses an explicit 45-minute create timeout to observe allocation
++queues; override it with `GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT`. The provider's
++default remains 15 minutes. SSH checks run immediately, retry within three
++minutes, and bound each complete attempt to 15 seconds.
+ To reuse a retained run's key, set `GIGAHOST_TEST_MATRIX_KEY_FILE` to its
+ `private/id_ed25519`. It must still be registered on the account; the rerun
+ leaves this supplied key intact.
+@@ -205,6 +209,52 @@ with Gigahost. The separate `private/` folders contain debug credentials and
+ the run's SSH private key, all written with mode 0600. Installer details are
+ captured while installing because the API removes them when installation ends.
+ 
++Repeat the matrix and the remaining Terraform acceptance suite three times:
++
++```console
++$ GIGAHOST_TEST_DEPLOY_TYPE=performance GIGAHOST_TEST_DEPLOY_SIZE=2c-4gb-40gb \
++    GIGAHOST_TEST_ZONE_APEX=test.headscale.no GIGAHOST_TEST_ZONE_NAME=test.headscale.no \
++    direnv exec . nix run .#test-acc-repeat -- --rounds 3 --parallel 4
++```
++
++Each round has a separate evidence directory. Failures from the first round
++are retained; later rounds cancel their VMs after recording evidence. If the
++first round retains its generated key, later rounds reuse it. Supplied keys
++are always preserved. Inputs are saved for every round, including the key.
++Missing live prerequisites remain explicit skips.
++The repeat runner also creates a disposable VM for existing-server name, rDNS,
++DNS integration, IPv4 ordering and import tests (`GIGAHOST_TEST_SERVER_FIXTURE=1`). Its IDs
++are scoped to those subtests; the fixture is cancelled after they finish.
++CLI-created server import uses another disposable VM within the fixture tests.
++`GIGAHOST_TEST_ZONE_NAME` makes the multiple-record test create that exact
++dedicated zone, populate A/AAAA/TXT records, verify a no-op plan, then destroy
++it. Other DNS tests create unique zones beneath `GIGAHOST_TEST_ZONE_APEX`.
++
++`matrix.tsv` and `matrix.json` separate observed submission-to-allocation,
++submission-to-API-readiness, SSH and cleanup times. Deployments exceeding the
++provider's default timeout are flagged. Each case's `share/events.jsonl`
++preserves timestamped API responses, including the complete `install_progress`
++history observed by the provider. These are polling observations, so transitions
++between requests cannot be timed exactly. Disposable server tests also record
++API exchanges under `suite/<test>/share/`, with startup and cleanup summaries
++in `server-tests.json`. Requests and responses stay unchanged; recording only
++scrubs credentials from saved evidence. `stability.json` counts passes,
++failures and skips per test; mixed passes and failures indicate intermittency
++within this experiment. Three passes are evidence from three trials, not a
++guarantee. Raw Go test logs remain in each round's `private/` directory.
++
++Summarize a running or completed experiment again with:
++
++```console
++$ direnv exec . nix run .#test-acc-repeat -- --summarize .direnv/acceptance-repeat-<timestamp>
++```
++
++After an interrupted scheduler's active test command finishes cleanup, resume
++the remaining commands with `--resume .direnv/acceptance-repeat-<timestamp>`.
++Completed commands are preserved. The runner uses a 12-hour outer Go timeout
++to allow serial matrices to finish their per-cell deadlines and cleanup;
++override it with `--timeout` when changing provisioning limits.
++
+ Some acceptance tests need live prerequisites the standard test account
+ lacks and skip unless gated env vars are set:
+ 
+diff --git a/flake.nix b/flake.nix
+index e76a699..3a24ca6 100644
+--- a/flake.nix
++++ b/flake.nix
+@@ -211,9 +211,15 @@
+               export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
+               export TF_ACC_PROVIDER_NAMESPACE=hashicorp
+               export TF_ACC_PROVIDER_HOST=registry.opentofu.org
+-              go test -v -timeout 30m ./tfprovider/...
++              go test -v -timeout 30m ./tfprovider/... "$@"
+             '';
+ 
++            test-acc-repeat =
++              mkApp "test-acc-repeat" "Repeat provider acceptance tests and record stability evidence"
++                ''
++                  exec ${pkgs.python3}/bin/python3 scripts/test-acc-repeat.py "$@"
++                '';
++
+             test-e2e = mkApp "test-e2e" "Run the live end-to-end suites" ''
+               go test -tags e2e -v -timeout 30m ./e2e/... ./cli/...
+             '';
+diff --git a/tfprovider/acc_test.go b/tfprovider/acc_test.go
+index 3425fa2..5e21271 100644
+--- a/tfprovider/acc_test.go
++++ b/tfprovider/acc_test.go
+@@ -114,7 +114,12 @@ func testAccGigahostClient(t *testing.T) *gigahost.Client {
+ 		t.Skip("GIGAHOST_TOKEN not set; skipping acceptance test")
+ 	}
+ 
+-	c, err := gigahost.NewClient(gigahost.WithToken(token))
++	opts := []gigahost.Option{gigahost.WithToken(token)}
++	if baseURL := os.Getenv("GIGAHOST_BASE_URL"); baseURL != "" {
++		opts = append(opts, gigahost.WithBaseURL(baseURL))
++	}
++
++	c, err := gigahost.NewClient(opts...)
+ 	if err != nil {
+ 		t.Fatalf("testAccGigahostClient: %v", err)
+ 	}
+diff --git a/tfprovider/dns_acc_test.go b/tfprovider/dns_acc_test.go
+index 0aeb248..bf464ee 100644
+--- a/tfprovider/dns_acc_test.go
++++ b/tfprovider/dns_acc_test.go
+@@ -3,6 +3,7 @@ package tfprovider_test
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
+ 	"testing"
+ 
+ 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+@@ -217,7 +218,11 @@ func TestAccDNSRecord_TXT(t *testing.T) {
+ // TestAccDNSRecord_multipleInZone creates a zone with three different record
+ // types and verifies they coexist without conflict.
+ func TestAccDNSRecord_multipleInZone(t *testing.T) {
+-	zoneName := accZoneName(t, "rec-multi")
++	zoneName := os.Getenv("GIGAHOST_TEST_ZONE_NAME")
++	if zoneName == "" {
++		zoneName = accZoneName(t, "rec-multi")
++	}
++
+ 	client := testAccGigahostClient(t)
+ 
+ 	resource.Test(t, resource.TestCase{
+@@ -228,11 +233,19 @@ func TestAccDNSRecord_multipleInZone(t *testing.T) {
+ 			{
+ 				Config: testAccDNSMultipleRecordsConfig(zoneName),
+ 				Check: resource.ComposeAggregateTestCheckFunc(
++					resource.TestCheckResourceAttr("gigahost_dns_zone.test", "name", zoneName),
+ 					resource.TestCheckResourceAttr("gigahost_dns_record.a", "type", "A"),
++					resource.TestCheckResourceAttr("gigahost_dns_record.a", "value", "1.2.3.4"),
+ 					resource.TestCheckResourceAttr("gigahost_dns_record.aaaa", "type", "AAAA"),
++					resource.TestCheckResourceAttr("gigahost_dns_record.aaaa", "value", "2001:db8::1"),
+ 					resource.TestCheckResourceAttr("gigahost_dns_record.txt", "type", "TXT"),
++					resource.TestCheckResourceAttr("gigahost_dns_record.txt", "value", "hello from terraform acc test"),
+ 				),
+ 			},
++			{
++				Config:   testAccDNSMultipleRecordsConfig(zoneName),
++				PlanOnly: true,
++			},
+ 		},
+ 	})
+ }
+diff --git a/tfprovider/import_oob_acc_test.go b/tfprovider/import_oob_acc_test.go
+index a3e3bf0..726e166 100644
+--- a/tfprovider/import_oob_acc_test.go
++++ b/tfprovider/import_oob_acc_test.go
+@@ -60,6 +60,7 @@ import (
+ 	"net/http"
+ 	"os"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+ 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+@@ -206,7 +207,10 @@ func runCLIJSON(t *testing.T, out any, args ...string) {
+ 
+ 	var stdout, stderr bytes.Buffer
+ 
+-	code := cli.Run(context.Background(), append([]string{"-o", "json"}, args...), cli.Options{
++	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Minute)
++	defer cancel()
++
++	code := cli.Run(ctx, append([]string{"-o", "json"}, args...), cli.Options{
+ 		Version: "oob-acc",
+ 		Commit:  "oob-acc",
+ 		Stdout:  &stdout,
+diff --git a/tfprovider/import_oob_server_acc_test.go b/tfprovider/import_oob_server_acc_test.go
+index b52ebd8..ce1cc40 100644
+--- a/tfprovider/import_oob_server_acc_test.go
++++ b/tfprovider/import_oob_server_acc_test.go
+@@ -4,6 +4,7 @@ package tfprovider_test
+ // the harness, shared design notes, and the full env-var matrix.
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"os"
+ 	"strconv"
+@@ -251,40 +252,54 @@ resource "gigahost_server_snapshot" "test" {
+ func waitForSnapshotCompleted(t *testing.T, client *gigahost.Client, serverID string, snapID int64) {
+ 	t.Helper()
+ 
+-	deadline := time.Now().Add(10 * time.Minute)
++	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
++	defer cancel()
+ 
+-	for time.Now().Before(deadline) {
+-		snaps, err := client.Snapshots.List(accCtx, serverID)
++	err := accWait(ctx, 10*time.Second, func(ctx context.Context) error {
++		snaps, err := client.Snapshots.List(ctx, serverID)
+ 		if err != nil {
+-			t.Fatalf("list snapshots: %v", err)
++			return fmt.Errorf("list snapshots: %w", err)
+ 		}
+ 
+ 		for _, s := range snaps {
+-			if s.ID == snapID && s.State == gigahost.SnapshotStateCompleted {
+-				return
++			if s.ID != snapID {
++				continue
+ 			}
++
++			if s.State == gigahost.SnapshotStateCompleted {
++				return nil
++			}
++
++			return fmt.Errorf("snapshot %d state is %q", snapID, s.State)
+ 		}
+ 
+-		time.Sleep(10 * time.Second)
++		return fmt.Errorf("snapshot %d is absent from the server snapshot list", snapID)
++	})
++	if err != nil {
++		t.Fatalf("snapshot %d on server %s did not complete: %v", snapID, serverID, err)
+ 	}
+-
+-	t.Fatalf("snapshot %d on server %s did not complete within 10m", snapID, serverID)
+ }
+ 
+ func testAccCheckOOBSnapshotDestroyed(client *gigahost.Client, serverID string, snapID int64) resource.TestCheckFunc {
+ 	return func(_ *terraform.State) error {
+-		snaps, err := client.Snapshots.List(accCtx, serverID)
+-		if err != nil {
+-			return fmt.Errorf("CheckDestroy: list snapshots: %w", err)
+-		}
++		ctx, cancel := context.WithTimeout(accCtx, 10*time.Minute)
++		defer cancel()
++
++		// Deletion is asynchronous; check its result rather than its acknowledgement.
++		return accWait(ctx, 10*time.Second, func(ctx context.Context) error {
++			snaps, err := client.Snapshots.List(ctx, serverID)
++			if err != nil {
++				return fmt.Errorf("CheckDestroy: list snapshots: %w", err)
++			}
+ 
+-		for _, s := range snaps {
+-			if s.ID == snapID {
+-				return fmt.Errorf("snapshot %d still exists on server %s after destroy", snapID, serverID)
++			for _, s := range snaps {
++				if s.ID == snapID {
++					return fmt.Errorf("snapshot %d still exists on server %s after destroy, state %q", snapID, serverID, s.State)
++				}
+ 			}
+-		}
+ 
+-		return nil
++			return nil
++		})
+ 	}
+ }
+ 
+@@ -310,9 +325,23 @@ func TestAccImportOOB_Server(t *testing.T) {
+ 	requireToken(t)
+ 
+ 	client := testAccGigahostClient(t)
++	client, recorder := accSuiteAPI(t, client)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	osSlug := accPickOS(t, client)
+ 
++	var serverID string
++
++	// Register cleanup before CLI polling so a failed wait still cancels an assigned VM.
++	t.Cleanup(func() {
++		if serverID == "" && recorder != nil {
++			serverID, _ = recorder.serverID.Load().(string)
++		}
++
++		if serverID != "" && serverID != "0" {
++			_ = client.Servers.Cancel(accCtx, serverID)
++		}
++	})
++
+ 	var deployed []struct {
+ 		ServerID string
+ 		Hostname string
+@@ -334,10 +363,7 @@ func TestAccImportOOB_Server(t *testing.T) {
+ 		t.Fatalf("deploy returned no ready server: %+v", deployed)
+ 	}
+ 
+-	serverID := deployed[0].ServerID
+-
+-	// Belt-and-braces: cancel the server even if the framework destroy fails.
+-	t.Cleanup(func() { _ = client.Servers.Cancel(accCtx, serverID) })
++	serverID = deployed[0].ServerID
+ 
+ 	resource.Test(t, resource.TestCase{
+ 		ProtoV6ProviderFactories: testAccProviderFactories,
+diff --git a/tfprovider/server_deploy_acc_test.go b/tfprovider/server_deploy_acc_test.go
+index 7355617..b4250ea 100644
+--- a/tfprovider/server_deploy_acc_test.go
++++ b/tfprovider/server_deploy_acc_test.go
+@@ -1,12 +1,14 @@
+ package tfprovider_test
+ 
+ import (
++	"context"
+ 	"crypto/ed25519"
+ 	"crypto/rand"
+ 	"encoding/json/v2"
+ 	"encoding/pem"
+ 	"errors"
+ 	"fmt"
++	"net"
+ 	"net/http"
+ 	"net/http/httptest"
+ 	"os"
+@@ -29,6 +31,7 @@ import (
+ // server and confirms it was cancelled.
+ func TestAccServer_deployAndSSH(t *testing.T) {
+ 	client := testAccGigahostClient(t)
++	client, recorder := accSuiteAPI(t, client)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	osSlug := accPickOS(t, client)
+ 	pub, signer := accEphemeralKey(t)
+@@ -56,7 +59,7 @@ func TestAccServer_deployAndSSH(t *testing.T) {
+ 					resource.TestCheckResourceAttrSet("gigahost_server.test", "rate_hourly"),
+ 					resource.TestCheckResourceAttr("gigahost_server.test", "platform", "cloud"),
+ 					captureAttr("gigahost_server.test", "id", &serverID),
+-					accSSHLogin("gigahost_server.test", signer),
++					accSSHLogin("gigahost_server.test", signer, recorder),
+ 					// GET /servers lags behind a fresh deploy by a minute or
+ 					// two; the by_hostname lookup in step 2 needs the server
+ 					// listed, so wait for it (and confirm the hostname the
+@@ -148,12 +151,13 @@ func testAccServerConfig(sshName, pubKey, typeSlug, sizeSlug, osSlug string) str
+ // on both.
+ func testAccWaitServerListed(client *gigahost.Client, serverID *string, wantHostname string) resource.TestCheckFunc {
+ 	return func(_ *terraform.State) error {
+-		deadline := time.Now().Add(5 * time.Minute)
++		ctx, cancel := context.WithTimeout(accCtx, 5*time.Minute)
++		defer cancel()
+ 
+ 		var lastHostnames []string
+ 
+-		for time.Now().Before(deadline) {
+-			servers, err := client.Servers.List(accCtx)
++		return accWait(ctx, 15*time.Second, func(ctx context.Context) error {
++			servers, err := client.Servers.List(ctx)
+ 			if err != nil {
+ 				return fmt.Errorf("list servers: %w", err)
+ 			}
+@@ -177,11 +181,8 @@ func testAccWaitServerListed(client *gigahost.Client, serverID *string, wantHost
+ 				return nil
+ 			}
+ 
+-			time.Sleep(15 * time.Second)
+-		}
+-
+-		return fmt.Errorf("server %s never appeared in GET /servers within 5m (listed hostnames: %v)",
+-			*serverID, lastHostnames)
++			return fmt.Errorf("server %s not listed (listed hostnames: %v)", *serverID, lastHostnames)
++		})
+ 	}
+ }
+ 
+@@ -437,6 +438,15 @@ func TestAccServer_perOS(t *testing.T) {
+ 	testAccRequireEnv(t, "GIGAHOST_TEST_OS_MATRIX")
+ 	t.Parallel()
+ 
++	createTimeout := os.Getenv("GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT")
++	if createTimeout == "" {
++		createTimeout = "45m"
++	}
++
++	if duration, err := time.ParseDuration(createTimeout); err != nil || duration <= 0 {
++		t.Fatalf("invalid GIGAHOST_TEST_MATRIX_CREATE_TIMEOUT %q", createTimeout)
++	}
++
+ 	client := testAccGigahostClient(t)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	keepFailures := os.Getenv("GIGAHOST_TEST_KEEP_FAILED") == "1"
+@@ -483,7 +493,8 @@ func TestAccServer_perOS(t *testing.T) {
+ 	inputs, err := json.Marshal(map[string]any{
+ 		"type": typeSlug, "size": sizeSlug, "region": region.Slug(),
+ 		"ssh_key_id": keyID, "ssh_key_name": keyName, "ssh_public_key": pub,
+-		"keep_failed": keepFailures,
++		"keep_failed":    keepFailures,
++		"create_timeout": createTimeout,
+ 	})
+ 	if err != nil {
+ 		t.Fatal(err)
+@@ -493,9 +504,7 @@ func TestAccServer_perOS(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 
+-	// Created 2026-10-05 from the test-account catalog. Keep the two newest
+-	// Debian/Ubuntu releases and the latest AlmaLinux/RockyLinux/Fedora.
+-	// Refresh the pinned slugs with: direnv exec . nix run .#gigahost -- deploy os
++	// Debian/Ubuntu versions are pinned for comparisons across runs.
+ 	// Family-only entries resolve their latest cloud amd64 version at run time.
+ 	for _, target := range []string{"debian-12", "debian-13", "ubuntu-24.04", "ubuntu-26.04", "almalinux", "rockylinux", "fedora"} {
+ 		image := accMatrixOS(all, target)
+@@ -523,7 +532,7 @@ func TestAccServer_perOS(t *testing.T) {
+ 
+ 				caseDir := filepath.Join(matrixDir, osSlug, auth.name)
+ 				keep := func() bool { return keepFailures && t.Failed() }
+-				apiURL := accMatrixAPI(t, client.BaseURL(), caseDir, keep)
++				apiURL, recorder := accMatrixAPI(t, client.BaseURL(), caseDir, keep)
+ 
+ 				config := fmt.Sprintf(`
+ %s
+@@ -534,8 +543,9 @@ resource "gigahost_server" "test" {
+   os       = %q
+   hostname = %q
+   ssh_keys = %s
++  timeouts = { create = %q }
+ }
+-`, testAccProviderConfig(), typeSlug, sizeSlug, region.Slug(), osSlug, accRandName("os-matrix"), keys)
++`, testAccProviderConfig(), typeSlug, sizeSlug, region.Slug(), osSlug, accRandName("os-matrix"), keys, createTimeout)
+ 				if err := os.WriteFile(filepath.Join(caseDir, "share", "main.tf"), []byte(config), 0o600); err != nil {
+ 					t.Fatal(err)
+ 				}
+@@ -552,6 +562,8 @@ resource "gigahost_server" "test" {
+ 						return testAccCheckServerCancelled(client, &serverID)(s)
+ 					},
+ 					ErrorCheck: func(err error) error {
++						recorder.event("terraform_error", map[string]any{"error_file": "private/error.txt"})
++
+ 						if writeErr := os.WriteFile(filepath.Join(caseDir, "private", "error.txt"), []byte(err.Error()), 0o600); writeErr != nil {
+ 							t.Errorf("save matrix error: %v", writeErr)
+ 						}
+@@ -563,7 +575,7 @@ resource "gigahost_server" "test" {
+ 						Check: resource.ComposeAggregateTestCheckFunc(
+ 							captureAttr("gigahost_server.test", "id", &serverID),
+ 							resource.TestCheckResourceAttr("gigahost_server.test", "status", "running"),
+-							accSSHLogin("gigahost_server.test", auth.signer),
++							accSSHLogin("gigahost_server.test", auth.signer, recorder),
+ 						),
+ 					}},
+ 				})
+@@ -588,8 +600,24 @@ func captureAttr(name, attr string, dst *string) resource.TestCheckFunc {
+ 
+ // accSSHLogin proves root SSH access by running hostname. A nil signer uses
+ // only the password in state; it never falls back to another auth method.
+-func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
+-	return func(s *terraform.State) error {
++func accSSHLogin(name string, signer ssh.Signer, recorders ...*accMatrixRecorder) resource.TestCheckFunc {
++	return func(s *terraform.State) (result error) {
++		var recorder *accMatrixRecorder
++		if len(recorders) > 0 {
++			recorder = recorders[0]
++		}
++
++		recorder.event("ssh_started", nil)
++
++		defer func() {
++			data := map[string]any{"passed": result == nil}
++			if result != nil {
++				data["error"] = result.Error()
++			}
++
++			recorder.event("ssh_finished", data)
++		}()
++
+ 		rs, ok := s.RootModule().Resources[name]
+ 		if !ok {
+ 			return fmt.Errorf("resource %s not found in state", name)
+@@ -609,6 +637,15 @@ func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
+ 				return fmt.Errorf("resource %s has no root password in state", name)
+ 			}
+ 
++			if recorder != nil {
++				body, err := json.Marshal(map[string]string{"root_password": password})
++				if err != nil {
++					return err
++				}
++
++				recorder.write("private/ssh-credentials.json", body)
++			}
++
+ 			auth = ssh.Password(password)
+ 		}
+ 
+@@ -619,42 +656,86 @@ func accSSHLogin(name string, signer ssh.Signer) resource.TestCheckFunc {
+ 			Timeout:         15 * time.Second,
+ 		}
+ 
+-		deadline := time.Now().Add(3 * time.Minute)
++		ctx, cancel := context.WithTimeout(accCtx, 3*time.Minute)
++		defer cancel()
+ 
+-		var lastErr error
++		return accWait(ctx, 10*time.Second, func(ctx context.Context) error {
++			err := accSSHAttempt(ctx, net.JoinHostPort(ip, "22"), cfg)
++			if err != nil {
++				recorder.event("ssh_attempt_failed", map[string]any{"error": err.Error()})
++			}
+ 
+-		for time.Now().Before(deadline) {
+-			client, derr := ssh.Dial("tcp", ip+":22", cfg)
+-			if derr != nil {
+-				lastErr = derr
++			return err
++		})
++	}
++}
+ 
+-				time.Sleep(10 * time.Second)
++// accWait checks immediately and retains the last condition error on timeout.
++func accWait(ctx context.Context, interval time.Duration, check func(context.Context) error) error {
++	for {
++		if err := ctx.Err(); err != nil {
++			return err
++		}
+ 
+-				continue
+-			}
++		err := check(ctx)
++		if err == nil {
++			return nil
++		}
+ 
+-			defer client.Close()
++		timer := time.NewTimer(interval)
++		select {
++		case <-ctx.Done():
++			timer.Stop()
+ 
+-			sess, serr := client.NewSession()
+-			if serr != nil {
+-				return fmt.Errorf("ssh session: %w", serr)
+-			}
+-			defer sess.Close()
++			return fmt.Errorf("%w; last check: %w", ctx.Err(), err)
++		case <-timer.C:
++		}
++	}
++}
+ 
+-			out, rerr := sess.Output("hostname")
+-			if rerr != nil {
+-				return fmt.Errorf("ssh run hostname: %w", rerr)
+-			}
++// A socket deadline bounds the handshake, session and command as well as dial.
++func accSSHAttempt(ctx context.Context, address string, cfg *ssh.ClientConfig) error {
++	ctx, cancel := context.WithTimeout(ctx, cfg.Timeout)
++	defer cancel()
+ 
+-			if strings.TrimSpace(string(out)) == "" {
+-				return errors.New("ssh hostname returned empty output")
+-			}
++	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", address)
++	if err != nil {
++		return fmt.Errorf("ssh dial: %w", err)
++	}
++	defer conn.Close()
+ 
+-			return nil
+-		}
++	stop := context.AfterFunc(ctx, func() { conn.Close() })
++	defer stop()
+ 
+-		return fmt.Errorf("ssh dial %s:22 failed within timeout: %w", ip, lastErr)
++	deadline, _ := ctx.Deadline()
++	if err := conn.SetDeadline(deadline); err != nil {
++		return fmt.Errorf("ssh deadline: %w", err)
+ 	}
++
++	sshConn, channels, requests, err := ssh.NewClientConn(conn, address, cfg)
++	if err != nil {
++		return fmt.Errorf("ssh handshake: %w", err)
++	}
++
++	client := ssh.NewClient(sshConn, channels, requests)
++	defer client.Close()
++
++	session, err := client.NewSession()
++	if err != nil {
++		return fmt.Errorf("ssh session: %w", err)
++	}
++	defer session.Close()
++
++	out, err := session.Output("hostname")
++	if err != nil {
++		return fmt.Errorf("ssh run hostname: %w", err)
++	}
++
++	if strings.TrimSpace(string(out)) == "" {
++		return errors.New("ssh hostname returned empty output")
++	}
++
++	return nil
+ }
+ 
+ // testAccCheckServerCancelled verifies, after destroy, that the server was
+diff --git a/tfprovider/server_ipv4_deploy_acc_test.go b/tfprovider/server_ipv4_deploy_acc_test.go
+index cf95cd5..0510cd3 100644
+--- a/tfprovider/server_ipv4_deploy_acc_test.go
++++ b/tfprovider/server_ipv4_deploy_acc_test.go
+@@ -15,14 +15,13 @@ import (
+ // server. It bills the server for a few minutes (cheapest VPS) like the other
+ // deploy acceptance tests.
+ //
+-// Gated: POST /servers/{id}/ipv4 rejects every documented body shape with
+-// "400 Invalid data received" (upstream B19), re-confirmed 2026-08-25 against
+-// a freshly deployed server. Set GIGAHOST_TEST_IPV4_ORDER=1 to run it once
+-// that endpoint works — the test needs no other setup.
++// Explicit opt-in: GIGAHOST_TEST_IPV4_ORDER=1. The repeat fixture enables it
++// against disposable servers so endpoint failures remain visible.
+ func TestAccServerIPv4_deploy(t *testing.T) {
+ 	testAccRequireEnv(t, "GIGAHOST_TEST_IPV4_ORDER")
+ 
+ 	client := testAccGigahostClient(t)
++	client, _ = accSuiteAPI(t, client)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	osSlug := accPickOS(t, client)
+ 	pub, _ := accEphemeralKey(t)
+diff --git a/tfprovider/server_matrix_acc_test.go b/tfprovider/server_matrix_acc_test.go
+index ba09aef..97a45a8 100644
+--- a/tfprovider/server_matrix_acc_test.go
++++ b/tfprovider/server_matrix_acc_test.go
+@@ -3,10 +3,13 @@ package tfprovider_test
+ import (
+ 	"bytes"
+ 	"compress/gzip"
++	"context"
+ 	"encoding/json/jsontext"
+ 	"encoding/json/v2"
++	"errors"
+ 	"fmt"
+ 	"io"
++	"net"
+ 	"net/http"
+ 	"net/http/httptest"
+ 	"net/http/httputil"
+@@ -18,8 +21,46 @@ import (
+ 	"sync"
+ 	"sync/atomic"
+ 	"testing"
++	"time"
++
++	"golang.org/x/crypto/ssh"
++
++	gigahost "github.com/kradalby/gigahost-go/client"
+ )
+ 
++// accSuiteAPI records disposable-server tests with their normal cleanup policy.
++func accSuiteAPI(t *testing.T, client *gigahost.Client) (*gigahost.Client, *accMatrixRecorder) {
++	t.Helper()
++
++	matrixDir := os.Getenv("GIGAHOST_TEST_MATRIX_DIR")
++	if matrixDir == "" {
++		return client, nil
++	}
++
++	dir := filepath.Join(filepath.Dir(matrixDir), "suite", t.Name())
++	apiURL, recorder := accMatrixAPI(t, client.BaseURL(), dir, func() bool { return false })
++	t.Setenv("GIGAHOST_BASE_URL", apiURL)
++
++	client = testAccGigahostClient(t)
++	t.Cleanup(func() {
++		if !t.Failed() || os.Getenv("GIGAHOST_TEST_KEEP_FAILED") == "1" {
++			return
++		}
++
++		// A failed Terraform destroy can leave dependants blocking VM cleanup.
++		// Only IDs linked to deployment orders created through this recorder qualify.
++		for _, serverID := range recorder.deployedServers() {
++			recorder.event("cleanup_backstop_started", map[string]any{"server_id": serverID})
++
++			if err := client.Servers.Cancel(accCtx, serverID); err != nil {
++				t.Logf("cleanup backstop for server %s: %v", serverID, err)
++			}
++		}
++	})
++
++	return client, recorder
++}
++
+ // accMatrixRedact removes credentials from API evidence before sharing it.
+ func accMatrixRedact(body []byte) []byte {
+ 	var data any
+@@ -73,9 +114,178 @@ func accMatrixRedact(body []byte) []byte {
+ 	return encoded
+ }
+ 
++// accMatrixRecorder timestamps observations without changing API responses.
++type accMatrixRecorder struct {
++	t           *testing.T
++	dir         string
++	started     time.Time
++	mu          sync.Mutex
++	serverID    atomic.Value
++	orders      sync.Map
++	deployedIDs sync.Map
++}
++
++func (r *accMatrixRecorder) write(name string, body []byte) {
++	r.mu.Lock()
++	defer r.mu.Unlock()
++
++	if err := os.WriteFile(filepath.Join(r.dir, name), body, 0o600); err != nil {
++		r.t.Errorf("save matrix evidence: %v", err)
++	}
++}
++
++func (r *accMatrixRecorder) event(stage string, data any) {
++	if r == nil {
++		return
++	}
++
++	r.mu.Lock()
++	defer r.mu.Unlock()
++
++	now := time.Now()
++
++	body, err := json.Marshal(struct {
++		Stage   string    `json:"stage"`
++		At      time.Time `json:"at"`
++		Elapsed float64   `json:"elapsed_seconds"`
++		Data    any       `json:"data,omitempty"`
++	}{stage, now.UTC(), now.Sub(r.started).Seconds(), data})
++	if err != nil {
++		r.t.Errorf("encode matrix event: %v", err)
++
++		return
++	}
++
++	f, err := os.OpenFile(filepath.Join(r.dir, "share", "events.jsonl"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
++	if err != nil {
++		r.t.Errorf("open matrix events: %v", err)
++
++		return
++	}
++	defer f.Close()
++
++	if _, err := f.Write(append(accMatrixRedact(body), '\n')); err != nil {
++		r.t.Errorf("save matrix event: %v", err)
++	}
++}
++
++func (r *accMatrixRecorder) request(req *http.Request) {
++	if req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/cancel") {
++		r.event("cleanup_started", nil)
++	}
++
++	deploy := req.Method == http.MethodPost && req.URL.Path == "/deploy/servers"
++	if !deploy && (req.Method == http.MethodGet || !strings.HasPrefix(req.URL.Path, "/servers/")) {
++		return
++	}
++
++	var body []byte
++
++	if req.Body != nil {
++		var err error
++
++		body, err = io.ReadAll(req.Body)
++		req.Body.Close()
++
++		if err != nil {
++			r.t.Errorf("read API request: %v", err)
++		}
++
++		req.Body = io.NopCloser(bytes.NewReader(body))
++	}
++
++	if deploy {
++		r.write("share/deploy-request.json", accMatrixRedact(body))
++		r.event("deploy_submitted", jsontext.Value(body))
++
++		return
++	}
++
++	r.event("api_request", map[string]any{
++		"path": req.URL.Path, "method": req.Method, "body": jsontext.Value(accMatrixRedact(body)),
++	})
++}
++
++func (r *accMatrixRecorder) allocation(body []byte) {
++	var status struct {
++		Data struct {
++			Servers []struct {
++				ID      any `json:"srv_id"`
++				OrderID any `json:"order_id"`
++			} `json:"servers"`
++		} `json:"data"`
++	}
++
++	if json.Unmarshal(body, &status) != nil {
++		return
++	}
++
++	for _, server := range status.Data.Servers {
++		if server.ID == nil {
++			continue
++		}
++
++		if _, owned := r.orders.Load(fmt.Sprint(server.OrderID)); !owned {
++			continue
++		}
++
++		serverID := fmt.Sprint(server.ID)
++		if serverID != "" && serverID != "0" {
++			r.serverID.Store(serverID)
++			r.deployedIDs.Store(serverID, true)
++		}
++	}
++}
++
++func (r *accMatrixRecorder) deployment(body []byte) {
++	var response struct {
++		Data struct {
++			OrderIDs []any `json:"order_ids"`
++		} `json:"data"`
++	}
++
++	if json.Unmarshal(body, &response) != nil {
++		return
++	}
++
++	for _, orderID := range response.Data.OrderIDs {
++		if orderID != nil {
++			r.orders.Store(fmt.Sprint(orderID), true)
++		}
++	}
++}
++
++func (r *accMatrixRecorder) deployedServers() []string {
++	var ids []string
++
++	r.deployedIDs.Range(func(key, _ any) bool {
++		if id, ok := key.(string); ok {
++			ids = append(ids, id)
++		}
++
++		return true
++	})
++
++	return ids
++}
++
++func (r *accMatrixRecorder) observe(path, method string, statusCode int, body []byte) {
++	r.event("api_response", map[string]any{
++		"path": path, "method": method, "status_code": statusCode, "body": jsontext.Value(accMatrixRedact(body)),
++	})
++
++	if path == "/deploy/status" {
++		r.allocation(body)
++	}
++
++	if path == "/deploy/servers" && statusCode >= 200 && statusCode < 300 {
++		r.deployment(body)
++	}
++}
++
+ // The framework always destroys resources. This test-only proxy records the
+ // actual API inputs and skips cancellation only for opted-in failed cells.
+-func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
++func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) (string, *accMatrixRecorder) {
+ 	t.Helper()
+ 
+ 	for _, subdir := range []string{"share", "private"} {
+@@ -84,41 +294,23 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 		}
+ 	}
+ 
++	recorder := &accMatrixRecorder{t: t, dir: dir, started: time.Now()}
++	recorder.event("case_started", nil)
++
+ 	target, err := url.Parse(baseURL)
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+ 
+-	var id atomic.Value
+-	id.Store("")
+-
+-	var (
+-		cancelled atomic.Bool
+-		mu        sync.Mutex
+-	)
++	recorder.serverID.Store("")
+ 
+-	write := func(name string, body []byte) {
+-		mu.Lock()
+-		defer mu.Unlock()
++	var cancelled atomic.Bool
+ 
+-		if err := os.WriteFile(filepath.Join(dir, name), body, 0o600); err != nil {
+-			t.Errorf("save matrix evidence: %v", err)
+-		}
+-	}
++	write := recorder.write
+ 	proxy := &httputil.ReverseProxy{}
+ 	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
+ 		r := pr.Out
+-		if r.Method == http.MethodPost && r.URL.Path == "/deploy/servers" {
+-			body, err := io.ReadAll(r.Body)
+-			r.Body.Close()
+-
+-			if err != nil {
+-				t.Errorf("read deployment request: %v", err)
+-			}
+-
+-			r.Body = io.NopCloser(bytes.NewReader(body))
+-			write("share/deploy-request.json", accMatrixRedact(body))
+-		}
++		recorder.request(r)
+ 
+ 		pr.SetURL(target)
+ 		// Let the transport decompress responses before recording JSON.
+@@ -126,11 +318,12 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 	}
+ 	proxy.ModifyResponse = func(r *http.Response) error {
+ 		path := strings.TrimPrefix(r.Request.URL.Path, strings.TrimSuffix(target.Path, "/"))
+-		if r.Request.Method == http.MethodPost && strings.HasSuffix(path, "/cancel") && r.StatusCode < 300 {
+-			cancelled.Store(true)
++		if r.Request.Method == http.MethodPost && strings.HasSuffix(path, "/cancel") {
++			cancelled.Store(r.StatusCode < 300)
++			recorder.event("cleanup_finished", map[string]any{"status_code": r.StatusCode})
+ 		}
+ 
+-		if path != "/deploy/servers" && path != "/deploy/status" && (!strings.HasPrefix(path, "/servers/") || strings.Count(path, "/") != 2) {
++		if path != "/deploy/servers" && path != "/deploy/status" && !strings.HasPrefix(path, "/servers/") {
+ 			return nil
+ 		}
+ 
+@@ -142,12 +335,13 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 		}
+ 
+ 		r.Body = io.NopCloser(bytes.NewReader(body))
++		recorder.observe(path, r.Request.Method, r.StatusCode, body)
+ 
+-		if after, ok := strings.CutPrefix(path, "/servers/"); ok {
++		if after, ok := strings.CutPrefix(path, "/servers/"); ok && strings.Count(path, "/") == 2 {
+ 			serverID := after
+-			if id.Load() != serverID {
++			if recorder.serverID.Load() != serverID {
+ 				t.Logf("server_id=%s", serverID)
+-				id.Store(serverID)
++				recorder.serverID.Store(serverID)
+ 			}
+ 
+ 			write("share/server.json", accMatrixRedact(body))
+@@ -170,7 +364,7 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 					}
+ 				}
+ 			}
+-		} else {
++		} else if path == "/deploy/servers" || path == "/deploy/status" {
+ 			name := "deploy-response.json"
+ 			if path == "/deploy/status" {
+ 				name = "deploy-status.json"
+@@ -181,9 +375,14 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 
+ 		return nil
+ 	}
++	proxy.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, err error) {
++		recorder.event("api_transport_error", map[string]any{"error": err.Error()})
++		http.Error(w, "upstream request failed", http.StatusBadGateway)
++	}
+ 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		if r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/cancel") && keep() {
+-			id.Store(strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/servers/"), "/cancel"))
++			recorder.event("cleanup_retained", nil)
++			recorder.serverID.Store(strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/servers/"), "/cancel"))
+ 			w.Header().Set("Content-Type", "application/json")
+ 			fmt.Fprint(w, `{"data":{}}`)
+ 
+@@ -194,7 +393,7 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 	}))
+ 	t.Cleanup(api.Close)
+ 	t.Cleanup(func() {
+-		serverID, _ := id.Load().(string)
++		serverID, _ := recorder.serverID.Load().(string)
+ 		if serverID == "0" {
+ 			serverID = "" // The API uses zero while an order has no VM yet.
+ 		}
+@@ -207,10 +406,11 @@ func accMatrixAPI(t *testing.T, baseURL, dir string, keep func() bool) string {
+ 		}{t.Name(), serverID, !t.Failed(), keep() && !cancelled.Load() && serverID != ""}
+ 		body, _ := json.Marshal(result)
+ 		write("share/result.json", body)
++		recorder.event("case_finished", result)
+ 		t.Logf("matrix_result: %s", body)
+ 	})
+ 
+-	return api.URL
++	return api.URL, recorder
+ }
+ 
+ func TestMatrixEvidenceRedaction(t *testing.T) {
+@@ -269,7 +469,7 @@ func TestMatrixAPIRetention(t *testing.T) {
+ 					t.Fatal("matrix result incorrectly identified a retained VM")
+ 				}
+ 			})
+-			api := accMatrixAPI(t, upstream.URL, dir, func() bool { return tc.keep })
++			api, _ := accMatrixAPI(t, upstream.URL, dir, func() bool { return tc.keep })
+ 
+ 			for _, method := range []string{http.MethodGet, http.MethodPost} {
+ 				path := "/servers/" + tc.id
+@@ -307,6 +507,187 @@ func TestMatrixAPIRetention(t *testing.T) {
+ 			if err != nil || !bytes.Contains(body, []byte("root-secret")) {
+ 				t.Fatal("private debug credentials were not retained")
+ 			}
++
++			body, err = os.ReadFile(filepath.Join(dir, "share", "events.jsonl"))
++			if err != nil || bytes.Contains(body, []byte("root-secret")) || !bytes.Contains(body, []byte(`"stage":"api_response"`)) {
++				t.Fatal("API history missing or leaked credentials")
++			}
++		})
++	}
++}
++
++func TestMatrixAPITransparentRecording(t *testing.T) {
++	requestBody := `{"ip_id":"7793","dns":"acceptance.example.com"}`
++	responseBody := `{"message":"rejected","root_password":"private-response"}`
++	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		body, err := io.ReadAll(r.Body)
++		if err != nil || string(body) != requestBody || r.Method != http.MethodPut || r.URL.Path != "/api/v0/servers/42/reverse" {
++			t.Errorf("recorder changed the upstream request: %s %s %s (%v)", r.Method, r.URL.Path, body, err)
++		}
++
++		if r.Header.Get("Authorization") != "Bearer private-token" {
++			t.Error("recorder changed authentication")
++		}
++
++		w.Header().Set("Content-Type", "application/json")
++		w.WriteHeader(http.StatusBadRequest)
++		fmt.Fprint(w, responseBody)
++	}))
++	t.Cleanup(upstream.Close)
++	dir := t.TempDir()
++	api, _ := accMatrixAPI(t, upstream.URL+"/api/v0", dir, func() bool { return false })
++
++	req, err := http.NewRequestWithContext(t.Context(), http.MethodPut, api+"/servers/42/reverse", strings.NewReader(requestBody))
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	req.Header.Set("Authorization", "Bearer private-token")
++
++	resp, err := http.DefaultClient.Do(req)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer resp.Body.Close()
++
++	body, err := io.ReadAll(resp.Body)
++	if err != nil || string(body) != responseBody || resp.StatusCode != http.StatusBadRequest {
++		t.Fatalf("recorder changed the API response: %d %s (%v)", resp.StatusCode, body, err)
++	}
++
++	history, err := os.ReadFile(filepath.Join(dir, "share", "events.jsonl"))
++	if err != nil || bytes.Contains(history, []byte("private-response")) || bytes.Contains(history, []byte("private-token")) || !bytes.Contains(history, []byte(`"ip_id":"7793"`)) || !bytes.Contains(history, []byte(`"status_code":400`)) {
++		t.Fatal("request/error evidence missing or leaked credentials")
++	}
++}
++
++func TestMatrixAllocationOwnership(t *testing.T) {
++	recorder := &accMatrixRecorder{}
++	recorder.serverID.Store("")
++	recorder.deployment([]byte(`{"data":{"order_ids":[11]}}`))
++	recorder.allocation([]byte(`{"data":{"servers":[{"order_id":"11","srv_id":0},{"order_id":"12","srv_id":43}]}}`))
++
++	if recorder.serverID.Load() != "" {
++		t.Fatal("unassigned or unrelated VM became a cleanup target")
++	}
++
++	recorder.allocation([]byte(`{"data":{"servers":[{"order_id":"11","srv_id":42},{"order_id":12,"srv_id":43}]}}`))
++
++	if recorder.serverID.Load() != "42" {
++		t.Fatal("assigned VM was lost")
++	}
++
++	ids := recorder.deployedServers()
++
++	if len(ids) != 1 || ids[0] != "42" {
++		t.Fatalf("cleanup targets include unrelated VMs: %v", ids)
++	}
++}
++
++func TestSSHAttemptDeadline(t *testing.T) {
++	_, signer := accEphemeralKey(t)
++	serverConfig := &ssh.ServerConfig{NoClientAuth: true}
++	serverConfig.AddHostKey(signer)
++
++	for _, stage := range []string{"handshake", "session", "command"} {
++		t.Run(stage, func(t *testing.T) {
++			listener, err := net.Listen("tcp", "127.0.0.1:0")
++			if err != nil {
++				t.Fatal(err)
++			}
++
++			t.Cleanup(func() { listener.Close() })
++
++			ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
++			defer cancel()
++
++			done := make(chan struct{})
++			go func() {
++				defer close(done)
++
++				conn, err := listener.Accept()
++				if err != nil {
++					return
++				}
++				defer conn.Close()
++
++				stop := context.AfterFunc(ctx, func() { conn.Close() })
++				defer stop()
++
++				if stage == "handshake" {
++					io.Copy(io.Discard, conn)
++
++					return
++				}
++
++				server, channels, requests, err := ssh.NewServerConn(conn, serverConfig)
++				if err != nil {
++					return
++				}
++				defer server.Close()
++
++				go ssh.DiscardRequests(requests)
++
++				for ch := range channels {
++					if stage == "session" {
++						continue
++					}
++
++					channel, requests, err := ch.Accept()
++					if err != nil {
++						return
++					}
++
++					for range requests {
++					}
++
++					channel.Close()
++				}
++			}()
++
++			err = accSSHAttempt(ctx, listener.Addr().String(), &ssh.ClientConfig{
++				User: "root", HostKeyCallback: ssh.InsecureIgnoreHostKey(), Timeout: 100 * time.Millisecond,
++			})
++
++			want := stage
++			if stage == "command" {
++				want = "ssh run hostname"
++			}
++
++			if err == nil || !strings.Contains(err.Error(), want) || ctx.Err() != nil {
++				t.Fatalf("%s exceeded attempt bound or returned wrong error: %v", stage, err)
++			}
++
++			select {
++			case <-done:
++			case <-ctx.Done():
++				t.Fatal("stalled SSH server did not exit after the client closed")
++			}
+ 		})
+ 	}
+ }
++
++func TestConditionWait(t *testing.T) {
++	checks := 0
++	if err := accWait(t.Context(), time.Hour, func(context.Context) error {
++		checks++
++
++		return nil
++	}); err != nil || checks != 1 {
++		t.Fatalf("successful condition did not finish immediately: checks=%d error=%v", checks, err)
++	}
++
++	ctx, cancel := context.WithCancel(t.Context())
++	defer cancel()
++
++	last := errors.New("VM still installing")
++
++	err := accWait(ctx, time.Hour, func(context.Context) error {
++		cancel()
++
++		return last
++	})
++	if !errors.Is(err, context.Canceled) || !errors.Is(err, last) {
++		t.Fatalf("cancelled wait lost the condition error: %v", err)
++	}
++}
+diff --git a/tfprovider/server_os_change_acc_test.go b/tfprovider/server_os_change_acc_test.go
+index b4e2242..2f9ff51 100644
+--- a/tfprovider/server_os_change_acc_test.go
++++ b/tfprovider/server_os_change_acc_test.go
+@@ -1,9 +1,11 @@
+ package tfprovider_test
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+ 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+@@ -26,7 +28,20 @@ import (
+ // unreachable live — the account has no uploaded ISOs) is covered offline by
+ // TestServerModifyPlanMatrix.
+ func TestAccServerOSChangeMatrix(t *testing.T) {
++	accServerOSChange(t, "")
++}
++
++// Reinstall requires a hostname; exercise that contract explicitly.
++func TestAccServerOSChangeWithHostname(t *testing.T) {
++	testAccRequireEnv(t, "GIGAHOST_TEST_SERVER_FIXTURE")
++	accServerOSChange(t, accRandName("oschange")+".example.com")
++}
++
++func accServerOSChange(t *testing.T, hostname string) {
++	t.Helper()
++
+ 	client := testAccGigahostClient(t)
++	client, recorder := accSuiteAPI(t, client)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	osA := accPickOS(t, client)
+ 	osB := accPickOSExcept(t, client, osA)
+@@ -36,13 +51,26 @@ func TestAccServerOSChangeMatrix(t *testing.T) {
+ 	var serverID, deployIP, rescueServerID string
+ 
+ 	osConfig := func(osSlug string) string {
+-		return testAccServerConfig(sshName, pub, typeSlug, sizeSlug, osSlug)
++		return testAccServerConfigHost(sshName, pub, typeSlug, sizeSlug, osSlug, hostname)
+ 	}
+ 
+ 	resource.Test(t, resource.TestCase{
+ 		PreCheck:                 func() { testAccPreCheck(t) },
+ 		ProtoV6ProviderFactories: testAccProviderFactories,
+ 		CheckDestroy:             testAccCheckServerCancelled(client, &rescueServerID),
++		ErrorCheck: func(err error) error {
++			if err != nil && recorder != nil && serverID != "" {
++				// A timed-out acknowledgement may still have started installation.
++				ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
++				defer cancel()
++
++				if _, readErr := client.Servers.Get(ctx, serverID); readErr != nil {
++					recorder.event("failure_state_read_error", map[string]any{"error": readErr.Error()})
++				}
++			}
++
++			return err
++		},
+ 		Steps: []resource.TestStep{
+ 			// 1. create with os A.
+ 			{
+diff --git a/tfprovider/server_snapshot_acc_test.go b/tfprovider/server_snapshot_acc_test.go
+index fdcf2d0..1a6785a 100644
+--- a/tfprovider/server_snapshot_acc_test.go
++++ b/tfprovider/server_snapshot_acc_test.go
+@@ -15,6 +15,7 @@ import (
+ // appears, then destroys everything (snapshot deleted, server cancelled).
+ func TestAccServerSnapshot(t *testing.T) {
+ 	client := testAccGigahostClient(t)
++	client, _ = accSuiteAPI(t, client)
+ 	typeSlug, sizeSlug := accCheapestTarget(t, client)
+ 	osSlug := accPickOS(t, client)
+ 	pub, _ := accEphemeralKey(t)

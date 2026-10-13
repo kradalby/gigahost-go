@@ -1,0 +1,268 @@
+{
+  "recorded_at": "2026-10-05T16:40:36.363743+00:00",
+  "matrix_cells": 42,
+  "shared_request_inputs": {
+    "pid": "7951",
+    "price_id": "4234",
+    "region_id": "1",
+    "quantity": 1
+  },
+  "shared_key_id": "2954",
+  "key_cells": 21,
+  "password_cells_without_keys": 21,
+  "recorded_reinstall_requests": 0,
+  "cases": [
+    {
+      "case": "round-01/matrix/almalinux-10/key",
+      "os_id": "117",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/almalinux-10/password",
+      "os_id": "117",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/debian-12/key",
+      "os_id": "101",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/debian-12/password",
+      "os_id": "101",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/debian-13/key",
+      "os_id": "108",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/debian-13/password",
+      "os_id": "108",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/fedora-43-server/key",
+      "os_id": "105",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/fedora-43-server/password",
+      "os_id": "105",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/rockylinux-9/key",
+      "os_id": "95",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/rockylinux-9/password",
+      "os_id": "95",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/ubuntu-24.04/key",
+      "os_id": "102",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/ubuntu-24.04/password",
+      "os_id": "102",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-01/matrix/ubuntu-26.04/key",
+      "os_id": "116",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-01/matrix/ubuntu-26.04/password",
+      "os_id": "116",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/almalinux-10/key",
+      "os_id": "117",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/almalinux-10/password",
+      "os_id": "117",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/debian-12/key",
+      "os_id": "101",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/debian-12/password",
+      "os_id": "101",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/debian-13/key",
+      "os_id": "108",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/debian-13/password",
+      "os_id": "108",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/fedora-43-server/key",
+      "os_id": "105",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/fedora-43-server/password",
+      "os_id": "105",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/rockylinux-9/key",
+      "os_id": "95",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/rockylinux-9/password",
+      "os_id": "95",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/ubuntu-24.04/key",
+      "os_id": "102",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/ubuntu-24.04/password",
+      "os_id": "102",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-02/matrix/ubuntu-26.04/key",
+      "os_id": "116",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-02/matrix/ubuntu-26.04/password",
+      "os_id": "116",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/almalinux-10/key",
+      "os_id": "117",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/almalinux-10/password",
+      "os_id": "117",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/debian-12/key",
+      "os_id": "101",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/debian-12/password",
+      "os_id": "101",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/debian-13/key",
+      "os_id": "108",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/debian-13/password",
+      "os_id": "108",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/fedora-43-server/key",
+      "os_id": "105",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/fedora-43-server/password",
+      "os_id": "105",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/rockylinux-9/key",
+      "os_id": "95",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/rockylinux-9/password",
+      "os_id": "95",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/ubuntu-24.04/key",
+      "os_id": "102",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/ubuntu-24.04/password",
+      "os_id": "102",
+      "ssh_keys": []
+    },
+    {
+      "case": "round-03/matrix/ubuntu-26.04/key",
+      "os_id": "116",
+      "ssh_keys": [
+        "2954"
+      ]
+    },
+    {
+      "case": "round-03/matrix/ubuntu-26.04/password",
+      "os_id": "116",
+      "ssh_keys": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-05T16:15:07.363897+00:00",
+  "method": "GET",
+  "path": "/servers/18928",
+  "status_code": 200,
+  "observation": "Read-only check while snapshot 7061 was absent and its Terraform acceptance completion wait was active",
+  "server": {
+    "srv_id": "18928",
+    "os_id": "108",
+    "srv_status": true,
+    "srv_status_install": false,
+    "srv_status_snapshot": false,
+    "cancelled": null,
+    "srv_deleted": "0"
+  }
+}

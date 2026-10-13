@@ -1,0 +1,1 @@
+{"meta":{"time":1791212080,"message":"200 OK","status":200,"status_message":"200 OK","maintenance":false},"data":{"servers":[{"order_id":36039,"srv_id":18901,"ip":"185.181.63.20","ipv6":"2a03:94e0:ffff:185:181:63::20","status":"ready","password":"","app":null,"install_progress":null,"order_number":"17881","hostname":"tf-acc-tfacc-600348.example.com"}],"all_ready":true}}

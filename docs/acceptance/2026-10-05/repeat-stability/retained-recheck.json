@@ -1,0 +1,18 @@
+{
+  "observed_at": "2026-10-05T16:52:04.267850+00:00",
+  "server_id": "18884",
+  "snapshot_response": {
+    "meta": {
+      "status": 200,
+      "status_message": "200 OK",
+      "maintenance": false,
+      "time": 1791219124,
+      "message": "200 OK"
+    },
+    "data": []
+  },
+  "key_preservation": {
+    "2952": true,
+    "2954": true
+  }
+}

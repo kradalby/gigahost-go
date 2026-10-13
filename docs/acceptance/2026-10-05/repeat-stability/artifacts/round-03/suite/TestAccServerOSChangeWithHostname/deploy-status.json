@@ -1,0 +1,1 @@
+{"meta":{"status":200,"status_message":"200 OK","maintenance":false,"time":1791216221,"message":"200 OK"},"data":{"servers":[{"ip":"185.181.63.26","ipv6":"2a03:94e0:ffff:185:181:63::26","status":"ready","password":"","order_id":36064,"hostname":"tf-acc-oschange-070837.example.com","srv_id":18926,"app":null,"install_progress":null,"order_number":"17906"}],"all_ready":true}}

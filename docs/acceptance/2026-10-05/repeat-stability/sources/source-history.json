@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-05T14:13:57.441271+00:00",
+  "tracked_patch": "sources/20261005T141357Z.patch",
+  "sha256": "389b4a1b60d7fb192668fc37142689068e7f178d0a06b87650696a8d9e5c848d",
+  "untracked_files": {
+    "scripts/test-acc-repeat.py": "b9c9d25ee2f34e25685c07aa73afae4b174a484d04dc3228d029f39c582d5de3",
+    "tfprovider/server_fixture_acc_test.go": "d57090ea949fde95351ba4909e5a1e4fa9e1725bedfe04af676fb019d1775fb9"
+  },
+  "scope": "acceptance test recording and reporting; production client/provider unchanged",
+  "comparison_note": "Round 1 suite compiled before suite API recording and field observations were added. Those diagnostics first apply to later suite rounds; existing test assertions and default provider timeouts stay unchanged."
+}

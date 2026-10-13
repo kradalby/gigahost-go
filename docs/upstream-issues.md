@@ -202,10 +202,20 @@ Legend: ✅ works · ⛔ 403 forbidden · ⏭️ test skipped · 🚧 deferred.
   billed until released in the control panel, or until the whole server is
   cancelled). **Suggestion:** add `DELETE /servers/{id}/ipv4/{ip_id}` (or return
   the new IP from the order call) so additional IPs can be fully managed.
+- **Update 2026-10-13:** the docs now list `DELETE /servers/{id}/ipv4/{ip_id}`,
+  and the order response returns `ip_id` and `ip_address` in `meta`. Unverified
+  live; the resource still diffs and does not release. 🚧
 
-### B19. `POST /servers/{id}/ipv4` rejects the documented body
+### B19. `POST /servers/{id}/ipv4` rejects the documented body — ✅ resolved (ours)
 
-- The docs specify a single parameter `ip_type` with value `"l2"` or `"l3"`, but
+- **Resolved 2026-10-13:** the docs now require `num_ips` ("must be present and
+  numeric; one IP is added per request"), and name its absence as the cause of
+  `400 "Invalid data received."`. Earlier doc versions listed only `ip_type`.
+  The client now sends `{"ip_type":…,"num_ips":1}`; unverified live. Remaining
+  ask: a specific validation message for a missing field. The rDNS endpoint had
+  the same gap: `PUT /servers/{id}/reverse` now requires `v4v6` with `ip_id` and
+  answers a bare 400 without it; the client now sends it.
+- Original report: the docs specify a single parameter `ip_type` with value `"l2"` or `"l3"`, but
   the live endpoint returns `400 "Invalid data received."` for every documented
   and reasonable payload shape — verified 2026-06-12 against a freshly deployed,
   fully-installed server (id 17643) with: JSON `{"ip_type":"l3"}`,
@@ -294,4 +304,4 @@ on|off` fail on a VM; `reboot` works. This is why no Terraform resource
 | sub-clients, DPA                    | all        | 🚧 deferred            | A4     |
 | `TestSlugContractCatalog`           | e2e (Go)   | ⚠️ logs collision      | B22    |
 | `PowerOn` / `PowerOff` on a VM      | client/CLI | ❌ 405                 | B23    |
-| `TestAccServerIPv4_deploy`          | Terraform  | ⏭️ gated               | B19    |
+| `TestAccServerIPv4_deploy`          | Terraform  | ⏭️ gated (billed IP)   | B19    |

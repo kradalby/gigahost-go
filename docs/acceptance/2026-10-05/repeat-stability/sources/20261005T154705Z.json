@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-05T15:47:05.575928+00:00",
+  "tracked_patch": "sources/20261005T154705Z.patch",
+  "sha256": "6c04e355aecad734970755ac68dabb8f4980131621de427e245a757f8250db1f",
+  "scope": "Final acceptance test instrumentation; runtime unchanged",
+  "untracked_files": {
+    "scripts/test-acc-repeat.py": "bdad58cd4e189ab677fe0061a3216fc35c0e9849ab45aba3a22088b135aaf853",
+    "tfprovider/server_fixture_acc_test.go": "370c6f9c6d1c71cff47e5416b892f372beee689e5c1cf8a33837689646f3bc5d"
+  },
+  "comparison_note": "Third full suite compiled after bounded async snapshot deletion, explicit-hostname reinstall and nested fresh IPv4 ordering were added. The later Go change only updated the IPv4 opt-in comment."
+}

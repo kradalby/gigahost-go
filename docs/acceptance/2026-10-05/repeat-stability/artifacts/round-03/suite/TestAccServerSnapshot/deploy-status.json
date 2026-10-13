@@ -1,0 +1,1 @@
+{"meta":{"time":1791216440,"message":"200 OK","status":200,"status_message":"200 OK","maintenance":false},"data":{"all_ready":true,"servers":[{"order_id":36065,"srv_id":18927,"ipv6":"2a03:94e0:ffff:185:181:63::20","password":"","order_number":"17907","hostname":"srv18927.gigahost.no","ip":"185.181.63.20","status":"ready","app":null,"install_progress":null}]}}

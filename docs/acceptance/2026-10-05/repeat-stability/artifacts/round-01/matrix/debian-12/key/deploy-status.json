@@ -1,0 +1,1 @@
+{"meta":{"message":"200 OK","status":200,"status_message":"200 OK","maintenance":false,"time":1791204452},"data":{"all_ready":true,"servers":[{"order_number":"17845","hostname":"tf-acc-os-matrix-510506","srv_id":18865,"status":"ready","password":"","app":null,"order_id":36003,"ip":"193.200.238.252","ipv6":"2a03:94e0:ffff:193:200:238::252","install_progress":null}]}}

@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-10-05T14:30:04.786831+00:00",
+  "matrix_parallelism": 4,
+  "overlap": {
+    "round": 2,
+    "supplement_started_at": "2026-10-05T14:21:24.108388+00:00",
+    "supplement_finished_at": "2026-10-05T14:27:13.312860+00:00",
+    "additional_test_vms": [
+      "18889",
+      "18891"
+    ]
+  },
+  "interpretation": "Supplement overlapped early round-two matrix startup. Record that additional provisioning load when comparing timings. Matrix acceptance assertions and deployment inputs did not change."
+}

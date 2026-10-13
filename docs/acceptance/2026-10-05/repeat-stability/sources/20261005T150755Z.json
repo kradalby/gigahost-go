@@ -1,0 +1,9 @@
+{
+  "at": "20261005T150755Z",
+  "patch_sha256": "52a5bb110b04316fb7a1d50746cc55149c6cd75a049a4c4418b26ad1d6931da2",
+  "scope": "Final test-only recording, waits and failure cleanup before round three; no runtime changes",
+  "notes": [
+    "Snapshot condition waiter keeps the same 10-minute limit and completed-state requirement; context bounds requests and preserves the last observed state/error.",
+    "Round-two suite used prior waiter and cleanup instrumentation."
+  ]
+}
