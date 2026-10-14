@@ -90,6 +90,8 @@
           vendorHash = rootVendorHash;
           goPkg = pkgs.go_latest;
           # client/*_test.go decode fixtures from client/testdata.
+          # Archived evidence: its .go copies are not part of the module.
+          excludeSrc = [ ./docs ];
           extraSrc = [ ./client/testdata ];
         };
 
