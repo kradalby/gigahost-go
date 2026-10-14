@@ -49,14 +49,14 @@ repos:
 
       - id: golangci-lint
         name: golangci-lint
-        entry: golangci-lint run --timeout=5m --fix
+        entry: bash -c 'golangci-lint run --timeout=5m --fix && cd client && golangci-lint run --timeout=5m --fix'
         language: system
         types: [go]
         pass_filenames: false
 
       - id: go-test
         name: go test
-        entry: go test -timeout=5m ./...
+        entry: go test -timeout=5m ./... github.com/kradalby/gigahost-go/client/...
         language: system
         types: [go]
         pass_filenames: false
@@ -66,5 +66,5 @@ repos:
         entry: bash -c 'nix build --fallback .#checks.x86_64-linux.build .#checks.x86_64-linux.golangci-lint .#checks.x86_64-linux.formatting'
         language: system
         # rootVendorHash moves only with the module graph.
-        files: ^(flake\.(nix|lock)|go\.(mod|sum))$
+        files: ^(flake\.(nix|lock)|(client/)?go\.(mod|sum))$
         pass_filenames: false

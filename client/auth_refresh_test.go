@@ -13,7 +13,7 @@ import (
 	"time"
 
 	client "github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // The Terraform provider drives one credentials-backed client at parallelism

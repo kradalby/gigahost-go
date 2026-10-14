@@ -23,7 +23,9 @@
       # Root module vendor hash. Shared between the overlay package and the
       # flake-checks `common` so it lives in one place. Recompute after
       # go.mod / go.sum changes (`nix-vendor-sri` in the devShell).
-      rootVendorHash = "sha256-yIB9is+pLnCYlqj/dhYRR3o3IWFzyzPm9SJ0T2qi7s4=";
+      # proxyVendor keeps the replaced ./client module out of the hash, so
+      # client edits do not change it.
+      rootVendorHash = "sha256-PqTJRp0iVl11dlyo6iEjNtgPPgFDqXfxGFQ5ra/2iFk=";
     in
     {
       overlays.default =
@@ -41,6 +43,7 @@
             subPackages = [ "cmd/gigahost" ];
 
             vendorHash = rootVendorHash;
+            proxyVendor = true;
 
             ldflags = [
               "-s"
@@ -88,11 +91,16 @@
           root = ./.;
           pname = "gigahost";
           vendorHash = rootVendorHash;
+          proxyVendor = true;
           goPkg = pkgs.go_latest;
           # client/*_test.go decode fixtures from client/testdata.
+          # client/go.mod: the root go.mod replaces the client module with ./client.
           # Archived evidence: its .go copies are not part of the module.
           excludeSrc = [ ./docs ];
-          extraSrc = [ ./client/testdata ];
+          extraSrc = [
+            ./client/testdata
+            ./client/go.mod
+          ];
         };
 
         buildDeps = with pkgs; [
@@ -139,9 +147,9 @@
             (pkgs.writeShellScriptBin "nix-vendor-sri" ''
               set -euo pipefail
               OUT=$(mktemp -d -t nar-hash-XXXXXX)
-              trap 'rm -rf "$OUT"' EXIT
-              go mod vendor -o "$OUT"
-              ${pkgs.nix}/bin/nix hash path --type sha256 --sri "$OUT"
+              trap 'chmod -R u+w "$OUT"; rm -rf "$OUT"' EXIT
+              GOMODCACHE="$OUT" GOFLAGS=-mod=mod go mod download
+              ${pkgs.nix}/bin/nix hash path --type sha256 --sri "$OUT/cache/download"
             '')
 
             # Helper: bulk-upgrade direct module deps.
@@ -164,10 +172,27 @@
         formatter = fc.formatter common;
 
         # Go CI gate, one job per check (see .github/workflows).
+        # ./... stops at the nested client module, so each check names it.
         checks = {
-          build = fc.goBuild common;
-          gotest = fc.goTest (common // { goRace = true; });
-          golangci-lint = fc.goLint common;
+          build = fc.goBuild (common // { subPackages = [ "cmd/gigahost" ]; });
+          gotest = fc.goTest (
+            common
+            // {
+              goRace = true;
+              testPackages = "./... github.com/kradalby/gigahost-go/client/...";
+            }
+          );
+          golangci-lint = fc.goLint (
+            common
+            // {
+              golangciLint = pkgs.writeShellScriptBin "golangci-lint" ''
+                set -e
+                ${pkgs.golangci-lint}/bin/golangci-lint "$@"
+                cd client
+                ${pkgs.golangci-lint}/bin/golangci-lint "$@"
+              '';
+            }
+          );
           formatting = fc.goFormat common;
         };
 

@@ -42,6 +42,9 @@ linters:
     - wsl # superseded by wsl_v5
 
   settings:
+    gomoddirectives:
+      # Root builds against the client module in ./client.
+      replace-local: true
     forbidigo:
       forbid:
         # Sleep-based tests are brittle and hide real bugs.

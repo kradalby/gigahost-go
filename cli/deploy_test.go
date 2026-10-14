@@ -11,7 +11,7 @@ import (
 	"time"
 
 	gigahost "github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // Two orders mid-provisioning, then the same two ready. Only the ready

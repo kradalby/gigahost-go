@@ -11,7 +11,7 @@ import (
 	"time"
 
 	client "github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // TestCatalogIsFetchedOnce is the point of the cache. A Terraform refresh asks

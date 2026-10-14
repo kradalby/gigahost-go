@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	client "github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // The transparent 401 retry is the one piece of the client that changes

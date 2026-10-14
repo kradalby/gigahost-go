@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	gigahost "github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // The harness drives the real provider over protocol 6, in process, against a

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // newServerAndClient builds a httptest server + client pair for

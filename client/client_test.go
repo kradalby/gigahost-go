@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/kradalby/gigahost-go/client"
-	"github.com/kradalby/gigahost-go/testhelper"
+	"github.com/kradalby/gigahost-go/client/testhelper"
 )
 
 // newTestClient builds a client pointed at the given test server with a
