@@ -88,6 +88,32 @@ func TestAPIErrorImplementsIs(t *testing.T) {
 	}
 }
 
+func TestAPIErrorStatusNotRepeated(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		err  client.APIError
+		want string
+	}{
+		{
+			client.APIError{StatusCode: 401, Status: "401 Unauthorized", Method: "GET", URL: "u", Message: "401 Unauthorized"},
+			"gigahost: GET u: 401 Unauthorized",
+		},
+		{
+			client.APIError{StatusCode: 403, Status: "403 Forbidden", Method: "GET", URL: "u", Message: "no"},
+			"gigahost: GET u: 403 Forbidden: no",
+		},
+		{
+			client.APIError{StatusCode: 404, Method: "GET", URL: "u"},
+			"gigahost: GET u: 404",
+		},
+	} {
+		if got := tc.err.Error(); got != tc.want {
+			t.Errorf("Error() = %q, want %q", got, tc.want)
+		}
+	}
+}
+
 func TestIsNotFound(t *testing.T) {
 	t.Parallel()
 

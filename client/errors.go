@@ -1,9 +1,11 @@
 package client
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 // Sentinel errors used for [errors.Is] matching. APIError implements Is()
@@ -43,11 +45,14 @@ type APIError struct {
 
 // Error implements the error interface.
 func (e *APIError) Error() string {
-	if e.Message != "" {
-		return fmt.Sprintf("gigahost: %s %s: %d %s: %s", e.Method, e.URL, e.StatusCode, e.Status, e.Message)
+	// Status already leads with the code; it is empty only on hand-built errors.
+	status := cmp.Or(e.Status, strconv.Itoa(e.StatusCode))
+	// Message falls back to meta.status_message, which often repeats Status.
+	if e.Message != "" && e.Message != status {
+		return fmt.Sprintf("gigahost: %s %s: %s: %s", e.Method, e.URL, status, e.Message)
 	}
 
-	return fmt.Sprintf("gigahost: %s %s: %d %s", e.Method, e.URL, e.StatusCode, e.Status)
+	return fmt.Sprintf("gigahost: %s %s: %s", e.Method, e.URL, status)
 }
 
 // IsNotFound reports whether err is a definitive not-found response from
