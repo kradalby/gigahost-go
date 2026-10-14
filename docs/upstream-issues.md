@@ -315,9 +315,9 @@ on|off` fail on a VM; `reboot` works. This is why no Terraform resource
   seconds apart. Let's Encrypt can cache the 1-value set until its TTL ends,
   then reject the second check with "Incorrect TXT record found".
 - The docs allow `record_ttl` 0 to 2147483647. Our client leaves out a TTL of
-  0 (`omitzero`), so the API sets its 3600 default. A TTL of 0 cannot be sent.
-  **Ask:** does the API keep a TTL below 60, and what is the expected time to
-  reach all nameservers?
+  0 (`omitzero`), so the API sets its 3600 default. TTL 1 is kept as sent and
+  all three nameservers serve it, so callers that need a short TTL use 1.
+  **Ask:** what is the expected time for a change to reach all nameservers?
 
 ## C. Test-skip ledger
 
