@@ -294,6 +294,17 @@ on|off` fail on a VM; `reboot` works. This is why no Terraform resource
   but is unimplemented. **Suggestion:** either accept GET as documented, or
   return a 4xx that names the reason.
 
+### B24. A DNS-only API key can read the account holder's personal data
+
+- Verified 2026-10-14 with a key limited to DNS on one zone. Other zones,
+  `GET /servers` and the like answer `403 "You do not have permission for this
+  operation."`, and its own zone answers `200`. But `GET /account` answers `200`
+  with `cust_id`, `cust_name` and the postal address.
+- **Impact:** a key handed to a DNS-01 ACME client (a client that proves domain
+  ownership with DNS records) exposes the holder's name and address if it leaks.
+  **Suggestion:** require an account scope for `GET /account`, as
+  `/account/apikeys` already appears to (A1).
+
 ## C. Test-skip ledger
 
 | Item                                | Layer      | Status                 | Reason |
