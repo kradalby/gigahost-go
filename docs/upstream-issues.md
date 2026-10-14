@@ -305,6 +305,20 @@ on|off` fail on a VM; `reboot` works. This is why no Terraform resource
   **Suggestion:** require an account scope for `GET /account`, as
   `/account/apikeys` already appears to (A1).
 
+### B25. Secondary nameservers lag the primary, which breaks ACME DNS-01
+
+- Seen 2026-10-14 by the headscale demo, through libdns-gigahost. ns1 serves a
+  new TXT record within a second. ns2 and ns3 lag 14–60 seconds, which looks
+  like a batched push. Once, ns2 served 3 values for a set that held 2, for
+  about one second.
+- **Impact:** a wildcard plus apex cert adds 2 TXT values to one name about 20
+  seconds apart. Let's Encrypt can cache the 1-value set until its TTL ends,
+  then reject the second check with "Incorrect TXT record found".
+- The docs allow `record_ttl` 0 to 2147483647. Our client leaves out a TTL of
+  0 (`omitzero`), so the API sets its 3600 default. A TTL of 0 cannot be sent.
+  **Ask:** does the API keep a TTL below 60, and what is the expected time to
+  reach all nameservers?
+
 ## C. Test-skip ledger
 
 | Item                                | Layer      | Status                 | Reason |
