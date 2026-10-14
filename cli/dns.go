@@ -238,7 +238,7 @@ func newDNSRecordsCmd(c *Context, parent *ff.FlagSet, load func() error) *ff.Com
 		},
 		{
 			Name:  "delete",
-			Usage: "gigahost dns records delete --zone ZONE --name NAME --type TYPE RECORD_ID",
+			Usage: "gigahost dns records delete --zone ZONE --name NAME --type TYPE --value VAL [--priority N] RECORD_ID",
 			Flags: ff.NewFlagSet("delete").SetParent(fs),
 			Exec: func(ctx context.Context, args []string) error {
 				return dnsRecordsDelete(ctx, c, load, args, &p)
