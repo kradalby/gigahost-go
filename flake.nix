@@ -230,7 +230,7 @@
             default = pkgApp pkgs.gigahost;
 
             test = mkApp "test" "Run the unit tests with -race" ''
-              go test -race ./...
+              go test -race ./... github.com/kradalby/gigahost-go/client/...
             '';
 
             test-acc = mkApp "test-acc" "Run the provider acceptance tests against the live API" ''
@@ -253,15 +253,18 @@
 
             lint = mkApp "lint" "Run golangci-lint" ''
               golangci-lint run --timeout=10m ./...
+              (cd client && golangci-lint run --timeout=10m ./...)
             '';
 
             fmt = mkApp "fmt" "Format Go sources" ''
               gofumpt -w .
               golangci-lint run --fix --timeout=10m ./... || true
+              (cd client && golangci-lint run --fix --timeout=10m ./...) || true
             '';
 
             tidy = mkApp "tidy" "Run go mod tidy" ''
               go mod tidy
+              (cd client && go mod tidy)
             '';
 
             generate = mkApp "generate" "Run go generate" ''
