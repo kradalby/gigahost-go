@@ -16,7 +16,7 @@ require (
 	github.com/knadh/koanf/providers/env/v2 v2.0.1
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.3.7
-	github.com/kradalby/gigahost-go/client v0.1.0
+	github.com/kradalby/gigahost-go/client v0.0.0-20261014144355-025b38b667ed
 	github.com/peterbourgon/ff/v4 v4.0.0-beta.1
 	github.com/tailscale/hujson v0.0.0-20260727124030-b80ff77dac4f
 	github.com/zalando/go-keyring v0.2.8

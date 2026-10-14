@@ -301,6 +301,15 @@ $ git push origin main vX.Y.Z  # goreleaser releases; registries ingest
 a pseudo-version; a tag here would resolve back to that version instead and
 break the pin. `bump` refuses to release against a tagged commit.
 
+`client/` is its own module, so library users skip the CLI and provider
+dependencies. Root reaches it through `replace => ./client`, but consumers
+ignore that replace and use the client pseudo-version that root requires. After
+a client change lands on `main`, bump that require before the next shim bump:
+
+```console
+$ go get github.com/kradalby/gigahost-go/client@<commit> && go mod tidy
+```
+
 ## Project design
 
 - **JSON v2**: every `json` import is the standard library's
